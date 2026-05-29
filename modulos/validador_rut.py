@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
 def validar_y_procesar_rut(rut_completo):
-    """
-    Implementa el algoritmo oficial del Modulo 11 de forma manual.
-    Retorna: (es_valido, lista_digitos, v_auxiliar, texto_pasos)
-    """
     rut_limpio = "".join(c for c in rut_completo if c.isalnum()).upper()
     
     if len(rut_limpio) < 2:
