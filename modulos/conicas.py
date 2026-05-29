@@ -33,10 +33,13 @@ def aplicar_reglas_ajuste(A, B, C, digitos):
                 "Se define A=0, B=0 (Parabola de eje vertical)."
             )
     elif d8 % 2 != 0:
-        C = -C
+        # Forzar C negativo: A*C < 0 produce Hiperbola
+        # C_base = -(d5+d6) ≤ 0, pero si es 0 se fuerza a -1
+        if C >= 0:
+            C = -abs(C) if C != 0 else -1.0
         ajustes.append(
-            "Ajuste condicional: d8 impar. Se reemplaza C por -C "
-            "para generar una Hiperbola."
+            "Ajuste condicional: d8 impar. Se fuerza C < 0 "
+            "para generar una Hiperbola (signos opuestos A y C)."
         )
     elif len(d) == 8 and d1 == d2:
         C = A
