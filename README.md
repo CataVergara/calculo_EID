@@ -5,26 +5,26 @@ Este proyecto es una aplicación web interactiva desarrollada con **Streamlit** 
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 Para que el sistema funcione correctamente, los archivos deben estar organizados en tu directorio de la siguiente manera:
 
 ```text
-📁 CALCULO_EID/
+ CALCULO_EID/
 │
-├── 📄 app.py                  # Código principal de la interfaz y flujo de control
-├── 📄 README.md               # Esta guía de uso e instalación
-└── 📁 modulos/                # Carpeta contenedora de los submódulos lógicos
-    ├── 📄 __init__.py         # Inicializador de paquete (vacío)
-    ├── 📄 conicas.py          # Lógica de procesamiento y desglose de cónicas
-    ├── 📄 graficador.py       # Funciones de graficación y visualización auxiliar
-    ├── 📄 limites.py          # Lógica de cálculo y aproximación de límites por tramo
-    └── 📄 validador_rut.py    # Algoritmo de validación Módulo 11 y extracción de dígitos
+├── app.py                  # Código principal de la interfaz y flujo de control
+├── README.md               # Esta guía de uso e instalación
+└── modulos/                # Carpeta contenedora de los submódulos lógicos
+    ├── __init__.py         # Inicializador de paquete (vacío)
+    ├── conicas.py          # Lógica de procesamiento y desglose de cónicas
+    ├── graficador.py       # Funciones de graficación y visualización auxiliar
+    ├── limites.py          # Lógica de cálculo y aproximación de límites por tramo
+    └── validador_rut.py    # Algoritmo de validación Módulo 11 y extracción de dígitos
 ```
 
 ---
 
-## 🛠 Requisitos
+## Requisitos
 
 - Python 3.10 o superior
 - Librería `streamlit`
@@ -45,7 +45,7 @@ python -m pip install streamlit
 3. Inicia la aplicación con Streamlit:
 
 ```bash
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
 4. Abre el navegador en la URL que Streamlit muestre, típicamente:
