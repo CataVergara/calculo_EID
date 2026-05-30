@@ -259,6 +259,9 @@ if rut_ingresado.strip() and ejecucion:
             puntos_eje_y = []
             rango_x = [a_critico + (step / 10.0) for step in range(-20, 21)]
             for x in rango_x:
+                if abs(x - a_critico) < 1e-12:
+                    puntos_eje_y.append(None)
+                    continue
                 if x < a_critico:
                     if residuo_limite == 0:
                         y_val = (x - a_critico) * (x + d1) / (x - a_critico)
