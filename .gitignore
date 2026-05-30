@@ -1,0 +1,10 @@
+# Ignorar directorios de caché de Python compilado
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar configuraciones locales de editores (opcional, muy recomendado)
+.vscode/
+.idea/
+*.swp
