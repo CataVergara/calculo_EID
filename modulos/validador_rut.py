@@ -31,8 +31,8 @@ def validar_y_procesar_rut(rut_completo):
     rut_numero = int(cuerpo)
     if rut_numero < 1000000:
         return False, [], 0, f"❌ RUT muy bajo. Debe ser ≥ 1,000,000. Ingresado: {rut_numero:,}"
-    if rut_numero > 27000000:
-        return False, [], 0, f"❌ RUT fuera de rango válido. Máximo: 27,000,000. Ingresado: {rut_numero:,}"
+    if rut_numero > 40000000:
+        return False, [], 0, f"❌ RUT fuera de rango válido. Máximo: 40,000,000. Ingresado: {rut_numero:,}"
     suma = 0
     multiplicador = 2
     detalles_multiplicacion = []
