@@ -72,12 +72,19 @@ st.markdown("### 🔑 Ingreso de RUT")
 col_in, col_st = st.columns([2, 2], gap="large")
 
 with col_in:
-    rut_ingresado = st.text_input("RUT (con o sin guion, ej: 12345678-9 o 12345678K):", value="", placeholder="Ej: 12345678-9")
+    rut_ingresado = st.text_input("RUT (con o sin guion, ej: 12345678-9 o 12345678K):", value="", placeholder="Ej: 12345678-9", max_chars=10)
 
 ejecucion = False
 digitos = [0]*8
 v_aux = 1
 texto_pasos_rut = ""
+
+# Sanitizar entrada: solo números, K y guión
+rut_sanitizado = "".join(c.upper() for c in rut_ingresado if c.isdigit() or c.upper() == 'K' or c == '-')
+if rut_sanitizado != rut_ingresado and rut_ingresado.strip():
+    with col_st:
+        st.warning("⚠️ Se permiten solo números, K y guión (-)")
+    rut_ingresado = rut_sanitizado
 
 if rut_ingresado.strip():
     es_valido, digitos_raw, v_aux, texto_pasos_rut = validar_y_procesar_rut(rut_ingresado)
