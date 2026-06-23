@@ -32,7 +32,10 @@ def evaluar_tramos_manualmente(x, caso, d, a):
         elif "De Salto" in caso:
             return x + d4
         else:
-            return x + d5
+            # Caso infinita: misma formula para todo x != a
+            if abs(x - a) < 1e-6:
+                return None
+            return (d5 + 1) / (x - a)
 
 def obtener_tabla_aproximacion(caso, d, a):
     h_izq = [1.0, 0.1, 0.01, 0.001]

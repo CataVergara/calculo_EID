@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
 def generar_coeficientes(digitos, v_aux):
+    """
+    Genera coeficientes según pauta (Fase 1):
+    Ecuación general: Ax² + By² + Cx + Dy + E = 0
+    """
     d1, d2, d3, d4, d5, d6, d7, d8 = digitos
     A = (d1 + d2) / v_aux
     B = (d3 + d4) / v_aux
@@ -8,65 +12,43 @@ def generar_coeficientes(digitos, v_aux):
     D = -(d7 + d8)
     E = d1 + d3 + d5 + d7
     F = 0.0
-    return A, B, C, D, E, F
+    return float(A), float(B), float(C), float(D), float(E), float(F)
 
 
-def aplicar_reglas_ajuste(A, B, C, digitos):
+def aplicar_reglas_ajuste(A, B, C, D, E, digitos):
     ajustes = []
-    d = digitos
-    d8 = d[-1]; d7 = d[-2]; d6 = d[-3]; d5 = d[-4]
-    d2 = d[-7]; d1 = d[-8] if len(d) == 8 else 0
+    d8 = digitos[-1]
+    d7 = digitos[-2]
+    d6 = digitos[-3]
+    d5 = digitos[-4]
+    d2 = digitos[-7]
+    d1 = digitos[-8] if len(digitos) == 8 else 0
 
     if (d5 + d6) % 3 == 0:
         if d7 % 2 == 0:
             B = 0.0
-            C = 0.0
-            ajustes.append(
-                "Ajuste condicional: d5+d6 multiplo de 3 y d7 par. "
-                "Se define C=0, B=0 (Parabola de eje horizontal)."
-            )
+            ajustes.append("Ajuste condicional: d5+d6 es multiplo de 3 y d7 es par. Se define B = 0 (Parabola de eje vertical).")
         else:
             A = 0.0
-            B = 0.0
-            ajustes.append(
-                "Ajuste condicional: d5+d6 multiplo de 3 y d7 impar. "
-                "Se define A=0, B=0 (Parabola de eje vertical)."
-            )
+            ajustes.append("Ajuste condicional: d5+d6 es multiplo de 3 y d7 es impar. Se define A = 0 (Parabola de eje horizontal).")
     elif d8 % 2 != 0:
-        # Forzar C negativo: A*C < 0 produce Hiperbola
-        # C_base = -(d5+d6) ≤ 0, pero si es 0 se fuerza a -1
-        if C >= 0:
-            C = -abs(C) if C != 0 else -1.0
-        ajustes.append(
-            "Ajuste condicional: d8 impar. Se fuerza C < 0 "
-            "para generar una Hiperbola (signos opuestos A y C)."
-        )
-    elif len(d) == 8 and d1 == d2:
-        C = A
-        B = 0.0
-        ajustes.append(
-            "Ajuste condicional: d1 = d2. Se impone C = A y B = 0 "
-            "para generar una Circunferencia."
-        )
+        B = -B
+        ajustes.append("Ajuste condicional: d8 es impar. Se reemplaza B por -B para generar una Hiperbola.")
+    elif len(digitos) == 8 and d1 == d2:
+        B = A
+        ajustes.append("Ajuste condicional: d1 = d2. Se impone B = A para generar una Circunferencia.")
 
-    return float(A), float(B), float(C), ajustes
+    return float(A), float(B), float(C), float(D), float(E), ajustes
 
 
-def calcular_discriminante(A, B, C):
-    return B**2 - 4.0 * A * C
-
-
-def clasificar_conica(A, B, C):
-    disc = B**2 - 4.0 * A * C
-    tol = 1e-12
-    if abs(disc) < tol:
+def clasificar_conica(A, B):
+    if abs(A) < 1e-9 or abs(B) < 1e-9:
         return "Parabola"
-    elif disc < 0:
-        if abs(A - C) < tol and abs(B) < tol and abs(A) > tol:
-            return "Circunferencia"
-        return "Elipse"
-    else:
+    if A * B < 0:
         return "Hiperbola"
+    if abs(A - B) < 1e-9:
+        return "Circunferencia"
+    return "Elipse"
 
 
 def _raiz_cuadrada(x):
@@ -83,358 +65,188 @@ def _raiz_cuadrada(x):
     return r
 
 
-def completar_cuadrados(A, B, C, D, E, F, tipo):
-    tol = 1e-12
-    disc = B**2 - 4.0 * A * C
-    tiene_rotacion = abs(B) > tol
-
-    # Si hay rotacion y no se puede ignorar, se documenta
-    if tiene_rotacion and tipo != "Hiperbola":
-        pass  # se continua con la aproximacion
+def completar_cuadrados(A, B, C, D, E, tipo):
+    p = {"tipo": tipo, "A": A, "B": B, "C": C, "D": D, "E": E}
 
     if tipo == "Parabola":
-        return _completar_parabola(A, B, C, D, E, F, tol)
+        if abs(B) < 1e-9:
+            h = -C / (2.0 * A)
+            k_num = E - (C**2 / (4.0 * A))
+            p["h"] = round(h, 4)
+            p["k"] = round(-k_num / D, 4) if abs(D) > 1e-9 else 0.0
+            p["p"] = round(-D / (4.0 * A), 4) if abs(A) > 1e-9 else 1.0
+            p["centro"] = (p["h"], p["k"])
+            p["focos"] = [(p["h"], round(p["k"] + p["p"], 4))]
+            p["vertices"] = [(p["h"], p["k"])]
+            p["directriz"] = f"y = {round(p['k'] - p['p'], 4)}"
+            p["eje"] = "vertical"
+        else:
+            k = -D / (2.0 * B)
+            h_num = E - (D**2 / (4.0 * B))
+            p["k"] = round(k, 4)
+            p["h"] = round(-h_num / C, 4) if abs(C) > 1e-9 else 0.0
+            p["p"] = round(-C / (4.0 * B), 4) if abs(B) > 1e-9 else 1.0
+            p["centro"] = (p["h"], p["k"])
+            p["focos"] = [(round(p["h"] + p["p"], 4), p["k"])]
+            p["vertices"] = [(p["h"], p["k"])]
+            p["directriz"] = f"x = {round(p['h'] - p['p'], 4)}"
+            p["eje"] = "horizontal"
+
     elif tipo == "Circunferencia":
-        return _completar_circunferencia(A, B, C, D, E, F, tol)
-    elif tipo == "Elipse":
-        return _completar_elipse(A, B, C, D, E, F, tol)
-    else:
-        return _completar_hiperbola(A, B, C, D, E, F, tol)
+        h = -C / (2.0 * A)
+        k = -D / (2.0 * B)
+        r_cuad = (C**2 / (4.0 * A**2)) + (D**2 / (4.0 * B**2)) - (E / A)
+        r_val = _raiz_cuadrada(r_cuad) if r_cuad >= 0 else 0.0
+        p["h"] = round(h, 4)
+        p["k"] = round(k, 4)
+        p["radio"] = round(r_val, 4)
+        p["centro"] = (p["h"], p["k"])
+        p["focos"] = [(p["h"], p["k"])]
+        p["vertices"] = [(p["h"], p["k"])]
+
+    elif tipo in ["Elipse", "Hiperbola"]:
+        h = -C / (2.0 * A)
+        k = -D / (2.0 * B)
+        p["h"] = round(h, 4)
+        p["k"] = round(k, 4)
+        p["centro"] = (p["h"], p["k"])
+
+        M = A * (h**2) + B * (k**2) - E
+        a2 = M / A if A != 0 else 1.0
+        b2 = M / B if B != 0 else 1.0
+
+        if tipo == "Elipse":
+            p["a_mayor"] = round(abs(a2)**0.5, 4)
+            p["b_menor"] = round(abs(b2)**0.5, 4)
+            p["a"] = p["a_mayor"]
+            p["b"] = p["b_menor"]
+            c2 = abs(a2 - b2)
+            p["c"] = round(c2**0.5, 4)
+            p["vertices"] = [(round(h - p["a_mayor"], 4), k), (round(h + p["a_mayor"], 4), k)]
+            p["focos"] = [(round(h - p["c"], 4), k), (round(h + p["c"], 4), k)]
+            p["eje_mayor"] = "horizontal" if a2 >= b2 else "vertical"
+            p["long_eje_mayor"] = round(2.0 * p["a_mayor"], 4)
+            p["long_eje_menor"] = round(2.0 * p["b_menor"], 4)
+        else:
+            p["a"] = round(abs(a2)**0.5, 4)
+            p["b"] = round(abs(b2)**0.5, 4)
+            c2 = abs(a2) + abs(b2)
+            p["c"] = round(c2**0.5, 4)
+            p["vertices"] = [(round(h - p["a"], 4), k), (round(h + p["a"], 4), k)]
+            p["focos"] = [(round(h - p["c"], 4), k), (round(h + p["c"], 4), k)]
+            p["orientacion"] = "horizontal" if a2 > 0 else "vertical"
+            m_p = p["b"] / p["a"] if p["a"] != 0 else 0.0
+            # asintotas como tuplas (pendiente, intercepto_y) para graficador
+            p["asintotas"] = [
+                (m_p,  -m_p * h + k),
+                (-m_p,  m_p * h + k)
+            ]
+            # version texto legible para mostrar al usuario
+            p["asintotas_texto"] = f"y = ±{round(m_p, 4)}(x - {p['h']}) + {p['k']}"
+            p["distancia_focal"] = round(2.0 * p["c"], 4)
+
+    return p
 
 
-def _completar_parabola(A, B, C, D, E, F, tol):
-    # Caso: A ~ 0, C ~ 0 no deberia ocurrir (seria degenerada)
-    if abs(C) > tol and abs(A) < tol:
-        # Cy² + Dx + Ey + F = 0 → (y - k)² = 4p(x - h)
-        Cv = C
-        k = -E / (2.0 * Cv)
-        if abs(D) < tol:
-            return {
-                "tipo": "Parabola", "eje": "horizontal",
-                "error": "Coeficiente D es cero. Forma degenerada."
-            }
-        p_val = -D / (4.0 * Cv)
-        h = -(F - E**2 / (4.0 * Cv)) / D
-        return {
-            "tipo": "Parabola",
-            "eje": "horizontal",
-            "h": h, "k": k,
-            "p": p_val,
-            "vertex": (round(h, 4), round(k, 4)),
-            "focus": (round(h + p_val, 4), round(k, 4)),
-            "directrix_tipo": "vertical",
-            "directrix_val": round(h - p_val, 4),
-            "canonica": f"(y - ({round(k,4)}))^2 = 4({round(p_val,4)})(x - ({round(h,4)}))"
-        }
-    elif abs(A) > tol and abs(C) < tol:
-        # Ax² + Dx + Ey + F = 0 → (x - h)² = 4p(y - k)
-        Av = A
-        h = -D / (2.0 * Av)
-        if abs(E) < tol:
-            return {
-                "tipo": "Parabola", "eje": "vertical",
-                "error": "Coeficiente E es cero. Forma degenerada."
-            }
-        p_val = -E / (4.0 * Av)
-        k = -(F - D**2 / (4.0 * Av)) / E
-        return {
-            "tipo": "Parabola",
-            "eje": "vertical",
-            "h": h, "k": k,
-            "p": p_val,
-            "vertex": (round(h, 4), round(k, 4)),
-            "focus": (round(h, 4), round(k + p_val, 4)),
-            "directrix_tipo": "horizontal",
-            "directrix_val": round(k - p_val, 4),
-            "canonica": f"(x - ({round(h,4)}))^2 = 4({round(p_val,4)})(y - ({round(k,4)}))"
-        }
-    return {"tipo": "Parabola", "error": "Forma degenerada (A y C son ambos cero)"}
-
-
-def _completar_circunferencia(A, B, C, D, E, F, tol):
-    Av = A
-    h = -D / (2.0 * Av)
-    k = -E / (2.0 * Av)
-    R = -F + D**2 / (4.0 * Av) + E**2 / (4.0 * Av)
-    r_cuad = R / Av
-    r_val = _raiz_cuadrada(r_cuad) if r_cuad >= 0 else None
-    if r_val is None or r_val < tol:
-        return {
-            "tipo": "Circunferencia",
-            "h": round(h, 4), "k": round(k, 4),
-            "radio": 0,
-            "centro": (round(h, 4), round(k, 4)),
-            "error": "Radio no positivo. Circunferencia degenerada."
-        }
-    return {
-        "tipo": "Circunferencia",
-        "h": round(h, 4), "k": round(k, 4),
-        "radio": round(r_val, 4),
-        "centro": (round(h, 4), round(k, 4)),
-        "focos": [(round(h, 4), round(k, 4))],
-        "vertices": [
-            (round(h + r_val, 4), round(k, 4)),
-            (round(h - r_val, 4), round(k, 4)),
-            (round(h, 4), round(k + r_val, 4)),
-            (round(h, 4), round(k - r_val, 4))
-        ],
-        "canonica": (
-            f"(x - ({round(h,4)}))^2 + (y - ({round(k,4)}))^2 = {round(r_val,4)}^2"
-        )
-    }
-
-
-def _completar_elipse(A, B, C, D, E, F, tol):
-    h = -D / (2.0 * A)
-    k = -E / (2.0 * C)
-    R = -F + D**2 / (4.0 * A) + E**2 / (4.0 * C)
-    a2 = R / A
-    b2 = R / C
-    if a2 <= 0 or b2 <= 0:
-        return {
-            "tipo": "Elipse",
-            "h": round(h, 4), "k": round(k, 4),
-            "error": "Semiejes no positivos. Elipse degenerada."
-        }
-    a_val = _raiz_cuadrada(a2)
-    b_val = _raiz_cuadrada(b2)
-    if a_val is None or b_val is None:
-        return {"tipo": "Elipse", "error": "Semiejes imaginarios."}
-    a_mayor = max(a_val, b_val)
-    b_menor = min(a_val, b_val)
-    c2 = abs(a_mayor**2 - b_menor**2)
-    c_val = _raiz_cuadrada(c2) if c2 > 0 else 0.0
-    if a_val >= b_val:
-        focos = [(round(h + c_val, 4), round(k, 4)),
-                 (round(h - c_val, 4), round(k, 4))]
-        vertices = [(round(h + a_val, 4), round(k, 4)),
-                    (round(h - a_val, 4), round(k, 4))]
-        eje_mayor = "horizontal"
-    else:
-        focos = [(round(h, 4), round(k + c_val, 4)),
-                 (round(h, 4), round(k - c_val, 4))]
-        vertices = [(round(h, 4), round(k + b_val, 4)),
-                    (round(h, 4), round(k - b_val, 4))]
-        eje_mayor = "vertical"
-    return {
-        "tipo": "Elipse",
-        "h": round(h, 4), "k": round(k, 4),
-        "a": round(a_val, 4), "b": round(b_val, 4),
-        "c": round(c_val, 4),
-        "a_mayor": round(a_mayor, 4),
-        "b_menor": round(b_menor, 4),
-        "centro": (round(h, 4), round(k, 4)),
-        "focos": focos,
-        "vertices": vertices,
-        "eje_mayor": eje_mayor,
-        "long_eje_mayor": round(2 * a_mayor, 4),
-        "long_eje_menor": round(2 * b_menor, 4),
-        "distancia_focal": round(2 * c_val, 4),
-        "canonica": (
-            f"(x - ({round(h,4)}))^2 / ({round(a_val,4)})^2 "
-            f"+ (y - ({round(k,4)}))^2 / ({round(b_val,4)})^2 = 1"
-        )
-    }
-
-
-def _completar_hiperbola(A, B, C, D, E, F, tol):
-    h = -D / (2.0 * A)
-    k = -E / (2.0 * C)
-    R = -F + D**2 / (4.0 * A) + E**2 / (4.0 * C)
-    tiene_rotacion = abs(B) > tol
-    if A > 0:
-        a2 = R / A
-        b2 = -R / C
-        if a2 <= 0 or b2 <= 0:
-            return {"tipo": "Hiperbola", "error": "Parametros no positivos."}
-        a_val = _raiz_cuadrada(a2)
-        b_val = _raiz_cuadrada(b2)
-        if a_val is None or b_val is None:
-            return {"tipo": "Hiperbola", "error": "Parametros imaginarios."}
-        c_val = _raiz_cuadrada(a_val**2 + b_val**2)
-        focos = [(round(h + c_val, 4), round(k, 4)),
-                 (round(h - c_val, 4), round(k, 4))]
-        vertices = [(round(h + a_val, 4), round(k, 4)),
-                    (round(h - a_val, 4), round(k, 4))]
-        pendiente = b_val / a_val
-        asintotas = [
-            (round(pendiente, 4), round(k - pendiente * h, 4)),
-            (round(-pendiente, 4), round(k + pendiente * h, 4))
-        ]
-        orientacion = "horizontal"
-    else:
-        a2 = -R / A
-        b2 = R / C
-        if a2 <= 0 or b2 <= 0:
-            return {"tipo": "Hiperbola", "error": "Parametros no positivos."}
-        a_val = _raiz_cuadrada(a2)
-        b_val = _raiz_cuadrada(b2)
-        if a_val is None or b_val is None:
-            return {"tipo": "Hiperbola", "error": "Parametros imaginarios."}
-        c_val = _raiz_cuadrada(a_val**2 + b_val**2)
-        focos = [(round(h, 4), round(k + c_val, 4)),
-                 (round(h, 4), round(k - c_val, 4))]
-        vertices = [(round(h, 4), round(k + a_val, 4)),
-                    (round(h, 4), round(k - a_val, 4))]
-        pendiente = a_val / b_val
-        asintotas = [
-            (round(pendiente, 4), round(k - pendiente * h, 4)),
-            (round(-pendiente, 4), round(k + pendiente * h, 4))
-        ]
-        orientacion = "vertical"
-    return {
-        "tipo": "Hiperbola",
-        "h": round(h, 4), "k": round(k, 4),
-        "a": round(a_val, 4), "b": round(b_val, 4),
-        "c": round(c_val, 4),
-        "centro": (round(h, 4), round(k, 4)),
-        "focos": focos,
-        "vertices": vertices,
-        "asintotas": asintotas,
-        "orientacion": orientacion,
-        "distancia_focal": round(2 * c_val, 4),
-        "tiene_rotacion": tiene_rotacion,
-        "canonica": (
-            f"(x - ({round(h,4)}))^2 / ({round(a_val,4)})^2 "
-            f"- (y - ({round(k,4)}))^2 / ({round(b_val,4)})^2 = 1"
-            if orientacion == "horizontal" else
-            f"(y - ({round(k,4)}))^2 / ({round(a_val,4)})^2 "
-            f"- (x - ({round(h,4)}))^2 / ({round(b_val,4)})^2 = 1"
-        )
-    }
-
-
-def generar_desglose_algebraico(A, B, C, D, E, F, tipo, params):
-    elementos = []
-    if not params or "error" in params:
-        return "**Error en la transformacion:** " + params.get("error", "Parametros no disponibles.")
-
+def generar_desglose_algebraico(A, B, C, D, E, tipo, p):
+    """Genera explicacion detallada del paso a paso algebraico."""
+    ecuacion_gen = f"({round(A,4)})x^2 + ({round(B,4)})y^2 + ({round(C,4)})x + ({round(D,4)})y + ({round(E,4)}) = 0"
+    desglose = "#### 1. ECUACION GENERAL (Forma Inicial)\n\n"
+    desglose += f"$$ {ecuacion_gen} $$\n\n"
+    desglose += "**Descripción:** Ecuación de segundo grado con dos variables (Ax² + By² + Cx + Dy + E = 0).\n\n"
+    
     if tipo == "Parabola":
-        elementos.append(_desglose_parabola(A, B, C, D, E, F, params))
+        desglose += "#### 2. IDENTIFICACION: PARABOLA\n\n"
+        if abs(B) < 1e-9:
+            desglose += "Criterio: B = 0, A ≠ 0 → Parábola de eje vertical.\n\n"
+            desglose += "#### 3. AGRUPACION Y AISLAMIENTO\n\n"
+            desglose += f"Términos en x: $$ ({round(A,4)})x^2 + ({round(C,4)})x = -{round(D,4)}y - {round(E,4)} $$\n\n"
+            desglose += "#### 4. COMPLETACION DE CUADRADOS\n\n"
+            h = -C / (2.0 * A)
+            desglose += f"Factor común: $$ ({round(A,4)})[x^2 + {round(C/A, 4)}x] = -{round(D,4)}y - {round(E,4)} $$\n\n"
+            desglose += f"Forma canónica final: $$ (x - {p['h']})^2 = {round(-D/A, 4)}(y - {p['k']}) $$\n\n"
+        else:
+            desglose += "Criterio: A = 0, B ≠ 0 → Parábola de eje horizontal.\n\n"
+            desglose += "#### 3. AGRUPACION Y AISLAMIENTO\n\n"
+            desglose += f"Términos en y: $$ ({round(B,4)})y^2 + ({round(D,4)})y = -{round(C,4)}x - {round(E,4)} $$\n\n"
+            desglose += "#### 4. COMPLETACION DE CUADRADOS\n\n"
+            desglose += f"Forma canónica final: $$ (y - {p['k']})^2 = {round(-C/B, 4)}(x - {p['h']}) $$\n\n"
+        
+    
     elif tipo == "Circunferencia":
-        elementos.append(_desglose_circunferencia(A, B, C, D, E, F, params))
+        desglose += "#### 2. IDENTIFICACION: CIRCUNFERENCIA\n\n"
+        desglose += "Criterio: A = B ≠ 0 (coeficientes iguales) → Circunferencia.\n\n"
+        desglose += "#### 3. COMPLETACION DE CUADRADOS EN AMBAS VARIABLES\n\n"
+        desglose += f"Forma canónica final: $$ (x - {p['h']})^2 + (y - {p['k']})^2 = {round(p['radio']**2, 4)} $$\n\n"
+    
     elif tipo == "Elipse":
-        elementos.append(_desglose_elipse(A, B, C, D, E, F, params))
+        desglose += "#### 2. IDENTIFICACION: ELIPSE\n\n"
+        desglose += "Criterio: A ≠ B, A·B > 0 (mismo signo) → Elipse.\n\n"
+        desglose += "#### 3. COMPLETACION DE CUADRADOS Y NORMALIZACION\n\n"
+        desglose += f"Forma canónica final: $$ \\frac{{(x - {p['h']})^2}}{{{round(p['a']**2, 4)}}} + \\frac{{(y - {p['k']})^2}}{{{round(p['b']**2, 4)}}} = 1 $$\n\n"
+    
     elif tipo == "Hiperbola":
-        elementos.append(_desglose_hiperbola(A, B, C, D, E, F, params))
-
-    return "\n\n---\n\n".join(elementos)
-
-
-def _fmt(v):
-    return f"{v:.4f}" if abs(v) < 1e6 else f"{v:.4e}"
-
-
-def _desglose_parabola(A, B, C, D, E, F, p):
-    eje = p.get("eje", "vertical")
-    h = p["h"]; k = p["k"]; pv = p["p"]
-    lines = []
-    if eje == "vertical":
-        # Ax² + Dx + Ey + F = 0
-        lines.append("### Desarrollo: Forma General a Canonica (Parabola Vertical)")
-        lines.append("")
-        lines.append(f"**Ecuacion General:**")
-        lines.append(f"$$ ({_fmt(A)})x^2 + ({_fmt(D)})x + ({_fmt(E)})y + ({_fmt(F)}) = 0 $$")
-        lines.append("")
-        lines.append("**Paso 1:** Aislar terminos en x y completar cuadrado:")
-        lines.append(f"$$ {_fmt(A)}(x^2 + {_fmt(D/A)}x) = -{_fmt(E)}y - {_fmt(F)} $$")
-        lines.append(f"$$ {_fmt(A)}(x + {_fmt(h)})^2 - {_fmt(A*h**2)} = -{_fmt(E)}y - {_fmt(F)} $$")
-        lines.append(f"$$ {_fmt(A)}(x + {_fmt(h)})^2 = -{_fmt(E)}(y - {_fmt(k)}) $$")
-        lines.append("")
-        lines.append(f"**Paso 2:** Dividir por el coeficiente:")
-        lines.append(f"$$ (x - ({_fmt(-h)}))^2 = {_fmt(-E/A)}(y - ({_fmt(k)})) $$")
-        lines.append("$$ \\Rightarrow 4p = " + _fmt(-E/A) + " $$")
-        lines.append(f"$$ p = {_fmt(pv)} $$")
-        lines.append("")
-        lines.append(f"**Forma Canonica:**")
-        lines.append(f"$$ {p['canonica']} $$")
-    else:
-        lines.append("### Desarrollo: Forma General a Canonica (Parabola Horizontal)")
-        lines.append("")
-        lines.append(f"**Ecuacion General:**")
-        lines.append(f"$$ ({_fmt(C)})y^2 + ({_fmt(D)})x + ({_fmt(E)})y + ({_fmt(F)}) = 0 $$")
-        lines.append("")
-        lines.append(f"**Forma Canonica:**")
-        lines.append(f"$$ {p['canonica']} $$")
-    return "\n".join(lines)
-
-
-def _desglose_circunferencia(A, B, C, D, E, F, p):
-    h = p["h"]; k_val = p["k"]; r = p["radio"]
-    lines = []
-    lines.append("### Desarrollo: Forma General a Canonica (Circunferencia)")
-    lines.append("")
-    lines.append(f"**Ecuacion General:**")
-    lines.append(f"$$ ({_fmt(A)})x^2 + ({_fmt(C)})y^2 + ({_fmt(D)})x + ({_fmt(E)})y + ({_fmt(F)}) = 0 $$")
-    lines.append("")
-    lines.append(f"**Paso 1:** Completar cuadrados en x e y:")
-    lines.append(f"$$ {_fmt(A)}(x^2 + {_fmt(D/A)}x) + {_fmt(C)}(y^2 + {_fmt(E/C)}y) = {_fmt(-F)} $$")
-    lines.append(f"$$ {_fmt(A)}(x - ({_fmt(-h)}))^2 + {_fmt(C)}(y - ({_fmt(-k_val)}))^2 = {_fmt(A*h**2 + C*k_val**2 - F)} $$")
-    lines.append("")
-    lines.append(f"**Forma Canonica:**")
-    lines.append(f"$$ {p['canonica']} $$")
-    lines.append("")
-    lines.append(f"**Radio:**")
-    lines.append(f"$$ r = {_fmt(r)} $$")
-    return "\n".join(lines)
-
-
-def _desglose_elipse(A, B, C, D, E, F, p):
-    h = p["h"]; k_val = p["k"]; a = p["a"]; b = p["b"]
-    lines = []
-    lines.append("### Desarrollo: Forma General a Canonica (Elipse)")
-    lines.append("")
-    lines.append(f"**Ecuacion General:**")
-    lines.append(f"$$ ({_fmt(A)})x^2 + ({_fmt(C)})y^2 + ({_fmt(D)})x + ({_fmt(E)})y + ({_fmt(F)}) = 0 $$")
-    lines.append("")
-    lines.append("**Paso 1:** Agrupar y completar cuadrados:")
-    lines.append(f"$$ {_fmt(A)}(x^2 + {_fmt(D/A)}x) + {_fmt(C)}(y^2 + {_fmt(E/C)}y) = {_fmt(-F)} $$")
-    lines.append(f"$$ {_fmt(A)}(x - ({_fmt(-h)}))^2 + {_fmt(C)}(y - ({_fmt(-k_val)}))^2 = {_fmt(A*h**2 + C*k_val**2 - F)} $$")
-    lines.append("")
-    lines.append("**Forma Canonica:**")
-    lines.append(f"$$ {p['canonica']} $$")
-    lines.append("")
-    lines.append(f"**Parametros:**")
-    lines.append(f"- Semieje mayor (a): {_fmt(a)}")
-    lines.append(f"- Semieje menor (b): {_fmt(b)}")
-    lines.append(f"- Distancia focal (c): {_fmt(p['c'])}")
-    return "\n".join(lines)
-
-
-def _desglose_hiperbola(A, B, C, D, E, F, p):
-    h = p["h"]; k_val = p["k"]; a = p["a"]; b = p["b"]
-    lines = []
-    lines.append("### Desarrollo: Forma General a Canonica (Hiperbola)")
-    lines.append("")
-    lines.append(f"**Ecuacion General:**")
-    lines.append(f"$$ ({_fmt(A)})x^2 + ({_fmt(B)})xy + ({_fmt(C)})y^2 + ({_fmt(D)})x + ({_fmt(E)})y + ({_fmt(F)}) = 0 $$")
-    lines.append("")
-    lines.append("**Paso 1:** Agrupar y completar cuadrados:")
-    lines.append(f"$$ {_fmt(A)}(x^2 + {_fmt(D/A)}x) + {_fmt(C)}(y^2 + {_fmt(E/C)}y) = {_fmt(-F)} $$")
-    lines.append("")
-    lines.append("**Forma Canonica:**")
-    lines.append(f"$$ {p['canonica']} $$")
-    lines.append("")
-    lines.append(f"**Parametros:**")
-    lines.append(f"- Semieje transverso (a): {_fmt(a)}")
-    lines.append(f"- Semieje conjugado (b): {_fmt(b)}")
-    lines.append(f"- Distancia focal (c): {_fmt(p['c'])}")
-    lines.append(f"- Orientacion: {p.get('orientacion', 'N/A')}")
-    if p.get("tiene_rotacion"):
-        lines.append("")
-        lines.append("> **Nota:** Esta hiperbola presenta termino xy (rotacion de ejes).")
-    return "\n".join(lines)
+        desglose += "#### 2. IDENTIFICACION: HIPERBOLA\n\n"
+        desglose += "Criterio: A·B < 0 (signos opuestos) → Hipérbola.\n\n"
+        desglose += "#### 3. COMPLETACION DE CUADRADOS Y NORMALIZACION\n\n"
+        desglose += f"Forma canónica final: $$ \\frac{{(x - {p['h']})^2}}{{{round(p['a']**2, 4)}}} - \\frac{{(y - {p['k']})^2}}{{{round(p['b']**2, 4)}}} = 1 $$\n\n"
+    
+    desglose += "#### 5. PROCEDIMIENTO INVERSO: Canónica → General\n\n"
+    desglose += "Expandimos los binomios cuadrados perfectos y trasladamos todo al lado izquierdo:\n\n"
+    
+    if tipo == "Parabola":
+        if abs(B) < 1e-9:
+            desglose += f"Partimos de: $(x - {p['h']})^2 = {round(-D/A, 4)}(y - {p['k']})$\n\n"
+            desglose += f"$x^2 - {round(2*p['h'], 4)}x + {round(p['h']**2, 4)} = {round(-D/A, 4)}y - {round(-D/A * p['k'], 4)}$\n\n"
+            desglose += f"Multiplicamos por $({round(A, 4)})$ y pasamos todo al lado izquierdo:\n\n"
+            desglose += f"$$ {ecuacion_gen} $$\n\n"
+        else:
+            desglose += f"Partimos de: $(y - {p['k']})^2 = {round(-C/B, 4)}(x - {p['h']})$\n\n"
+            desglose += f"$y^2 - {round(2*p['k'], 4)}y + {round(p['k']**2, 4)} = {round(-C/B, 4)}x - {round(-C/B * p['h'], 4)}$\n\n"
+            desglose += f"Multiplicamos por $({round(B, 4)})$ y pasamos todo al lado izquierdo:\n\n"
+            desglose += f"$$ {ecuacion_gen} $$\n\n"
+    
+    elif tipo == "Circunferencia":
+        h_v, k_v, r_v = p['h'], p['k'], p['radio']
+        desglose += f"Partimos de: $(x - {h_v})^2 + (y - {k_v})^2 = {round(r_v**2, 4)}$\n\n"
+        desglose += f"$x^2 - {round(2*h_v, 4)}x + {round(h_v**2, 4)} + y^2 - {round(2*k_v, 4)}y + {round(k_v**2, 4)} = {round(r_v**2, 4)}$\n\n"
+        desglose += f"Multiplicamos por A = $({round(A, 4)})$ y pasamos $r^2$ al lado izquierdo:\n\n"
+        desglose += f"$$ {ecuacion_gen} $$\n\n"
+    
+    elif tipo == "Elipse":
+        a2_v = round(p['a']**2, 4)
+        b2_v = round(p['b']**2, 4)
+        h_v, k_v = p['h'], p['k']
+        desglose += f"Partimos de: $\\frac{{(x-{h_v})^2}}{{{a2_v}}} + \\frac{{(y-{k_v})^2}}{{{b2_v}}} = 1$\n\n"
+        desglose += f"Multiplicamos por $({a2_v} \\cdot {b2_v})$:\n\n"
+        desglose += f"${b2_v}(x-{h_v})^2 + {a2_v}(y-{k_v})^2 = {a2_v} \\cdot {b2_v}$\n\n"
+        desglose += f"Expandimos y reordenamos todos los términos al lado izquierdo para obtener:\n\n"
+        desglose += f"$$ {ecuacion_gen} $$\n\n"
+    
+    elif tipo == "Hiperbola":
+        a2_v = round(p['a']**2, 4)
+        b2_v = round(p['b']**2, 4)
+        h_v, k_v = p['h'], p['k']
+        desglose += f"Partimos de: $\\frac{{(x-{h_v})^2}}{{{a2_v}}} - \\frac{{(y-{k_v})^2}}{{{b2_v}}} = 1$\n\n"
+        desglose += f"Multiplicamos por $({a2_v} \\cdot {b2_v})$:\n\n"
+        desglose += f"${b2_v}(x-{h_v})^2 - {a2_v}(y-{k_v})^2 = {a2_v} \\cdot {b2_v}$\n\n"
+        desglose += f"Expandimos y reordenamos todos los términos al lado izquierdo para obtener:\n\n"
+        desglose += f"$$ {ecuacion_gen} $$\n\n"
+    
+    desglose += "**Verificación:** Ambas formas son algebraicamente equivalentes y representan la misma cónica.\n"
+    
+    return desglose
 
 
 def generar_texto_elementos(p):
     if not p or "error" in p:
         return "**Elementos geometricos no disponibles.**"
-    lines = []
-    lines.append(f"**Tipo:** {p['tipo']}")
+    
+    lines = [f"**Tipo:** {p['tipo']}"]
+    
     if p["tipo"] == "Circunferencia":
         lines.append(f"- **Centro:** {p.get('centro', 'N/A')}")
         lines.append(f"- **Radio (r):** {p.get('radio', 'N/A')}")
-        lines.append(f"- **Vertices (aprox):** {p.get('vertices', 'N/A')}")
     elif p["tipo"] == "Elipse":
         lines.append(f"- **Centro:** {p.get('centro', 'N/A')}")
         lines.append(f"- **Semieje mayor (a):** {p.get('a_mayor', 'N/A')}")
@@ -442,9 +254,6 @@ def generar_texto_elementos(p):
         lines.append(f"- **Distancia focal (c):** {p.get('c', 'N/A')}")
         lines.append(f"- **Focos:** {p.get('focos', 'N/A')}")
         lines.append(f"- **Vertices:** {p.get('vertices', 'N/A')}")
-        lines.append(f"- **Eje mayor:** {p.get('eje_mayor', 'N/A')}")
-        lines.append(f"- **Longitud eje mayor:** {p.get('long_eje_mayor', 'N/A')}")
-        lines.append(f"- **Longitud eje menor:** {p.get('long_eje_menor', 'N/A')}")
     elif p["tipo"] == "Hiperbola":
         lines.append(f"- **Centro:** {p.get('centro', 'N/A')}")
         lines.append(f"- **Semieje transverso (a):** {p.get('a', 'N/A')}")
@@ -452,12 +261,12 @@ def generar_texto_elementos(p):
         lines.append(f"- **Distancia focal (c):** {p.get('c', 'N/A')}")
         lines.append(f"- **Focos:** {p.get('focos', 'N/A')}")
         lines.append(f"- **Vertices:** {p.get('vertices', 'N/A')}")
-        lines.append(f"- **Asintotas:** {p.get('asintotas', 'N/A')}")
-        lines.append(f"- **Orientacion:** {p.get('orientacion', 'N/A')}")
+        lines.append(f"- **Asintotas:** {p.get('asintotas_texto', 'N/A')}")
     elif p["tipo"] == "Parabola":
-        lines.append(f"- **Vertice:** {p.get('vertex', 'N/A')}")
-        lines.append(f"- **Foco:** {p.get('focus', 'N/A')}")
-        lines.append(f"- **Directriz:** {p.get('directrix_tipo', 'N/A')} = {p.get('directrix_val', 'N/A')}")
-        lines.append(f"- **Parametro p:** {p.get('p', 'N/A')}")
+        lines.append(f"- **Vertice:** {p.get('vertices', 'N/A')}")
+        lines.append(f"- **Foco:** {p.get('focos', 'N/A')}")
+        lines.append(f"- **Directriz:** {p.get('directriz', 'N/A')}")
+        lines.append(f"- **Parámetro p:** {p.get('p', 'N/A')}")
         lines.append(f"- **Eje:** {p.get('eje', 'N/A')}")
+    
     return "\n".join(lines)

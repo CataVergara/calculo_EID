@@ -4,7 +4,6 @@ from modulos.validador_rut import validar_y_procesar_rut
 from modulos.conicas import (
     generar_coeficientes,
     aplicar_reglas_ajuste,
-    calcular_discriminante,
     clasificar_conica,
     completar_cuadrados,
     generar_desglose_algebraico,
@@ -13,20 +12,67 @@ from modulos.conicas import (
 from modulos.graficador import crear_datos_grafico
 
 st.set_page_config(
-    page_title="MAT1186 - Panel Analitico",
+    page_title="MAT1186 - Análisis de Cónicas",
+    page_icon="📐",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-st.title("SISTEMA DE EVALUACION MATEMATICA MODULAR")
-st.caption("Evaluacion Integrada de Desempeno N°1 | Departamento de Ingenieria Civil en Informatica")
-st.markdown("---")
+st.markdown("""
+<style>
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 6px;
+        background-color: #f0f2f6;
+        padding: 6px 10px;
+        border-radius: 12px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 8px;
+        padding: 8px 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: white;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    /* Metric cards */
+    [data-testid="metric-container"] {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 10px 14px;
+    }
+    /* Expander */
+    .streamlit-expanderHeader {
+        font-weight: 600;
+        color: #495057;
+    }
+    /* Containers */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        border-radius: 12px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-st.subheader("Ingreso de Credenciales de Usuario")
+st.markdown("""
+<div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);
+            color: white; padding: 22px 30px; border-radius: 14px; margin-bottom: 18px;">
+    <h2 style="margin:0; font-size:1.6rem; letter-spacing:0.5px;">📐 Sistema de Análisis Matemático Modular</h2>
+    <p style="margin:6px 0 0 0; opacity:0.85; font-size:0.9rem;">
+        Evaluación Integrada de Desempeño N°1 &nbsp;·&nbsp;
+        MAT1186 Introducción al Cálculo &nbsp;·&nbsp;
+        Ingeniería Civil en Informática
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("### 🔑 Ingreso de RUT")
 col_in, col_st = st.columns([2, 2], gap="large")
 
 with col_in:
-    rut_ingresado = st.text_input("Identificador (Soporta 7 u 8 digitos con/sin guion):", value="")
+    rut_ingresado = st.text_input("RUT (con o sin guion, ej: 12345678-9 o 12345678K):", value="", placeholder="Ej: 12345678-9")
 
 ejecucion = False
 digitos = [0]*8
@@ -35,15 +81,17 @@ texto_pasos_rut = ""
 
 if rut_ingresado.strip():
     es_valido, digitos_raw, v_aux, texto_pasos_rut = validar_y_procesar_rut(rut_ingresado)
-    cuerpo_formateado = "".join(str(d) for d in digitos_raw).zfill(8)
-    digitos = [int(d) for d in cuerpo_formateado]
-    ejecucion = True
-
-    with col_st:
-        if es_valido:
-            st.success(f"Estado: RUT Valido Oficialmente | Auxiliar v = {v_aux}")
-        else:
-            st.warning(f"Modo Simulacion Activo (DV Corregido) | Auxiliar v = {v_aux}")
+    
+    if not es_valido:
+        with col_st:
+            st.error(texto_pasos_rut)
+        ejecucion = False
+    else:
+        cuerpo_formateado = "".join(str(d) for d in digitos_raw).zfill(8)
+        digitos = [int(d) for d in cuerpo_formateado]
+        ejecucion = True
+        with col_st:
+            st.success(f"✓ RUT Válido | Dígitos: {cuerpo_formateado} | Variable auxiliar: v = {v_aux}")
 else:
     with col_st:
         st.info("Sistema listo. Ingrese un identificador de usuario para inicializar los modulos analiticos.")
@@ -52,93 +100,167 @@ st.markdown("---")
 
 if rut_ingresado.strip() and ejecucion:
     tab1, tab2, tab3 = st.tabs([
-        "SECCIONES CONICAS",
-        "LIMITES Y CONTINUIDAD",
-        "VALIDACION DE COMPETENCIAS"
+        "📊 Secciones Cónicas",
+        "📈 Límites y Continuidad",
+        "🛡️ Validación de Competencias"
     ])
 
     d1, d2, d3, d4, d5, d6, d7, d8 = digitos
 
     with tab1:
-        st.subheader("Modelamiento de la Seccion Conica")
+        st.markdown("""
+        <div style="background:linear-gradient(135deg, #e8f4f8 0%, #f0f8ee 100%);
+                    padding:16px 20px; border-radius:12px; margin-bottom:16px;">
+        <h3 style="margin:0; color:#1e3a5f;">📐 Fase 1: Modelamiento de la Sección Cónica</h3>
+        </div>""", unsafe_allow_html=True)
 
         A_base, B_base, C_base, D_base, E_base, F_base = generar_coeficientes(digitos, v_aux)
-        A, B, C, lista_ajustes = aplicar_reglas_ajuste(A_base, B_base, C_base, digitos)
-        disc = calcular_discriminante(A, B, C)
-        tipo_curva = clasificar_conica(A, B, C)
+        A, B, C, D, E, lista_ajustes = aplicar_reglas_ajuste(A_base, B_base, C_base, D_base, E_base, digitos)
+        tipo_curva = clasificar_conica(A, B)
 
-        st.markdown(f"**Lugar Geometrico Determinado:** `{tipo_curva}`")
-        st.markdown(f"**Discriminante (B² - 4AC):** `{round(disc, 6)}`")
+        colores = {"Circunferencia": "#2196F3", "Elipse": "#4CAF50", "Hiperbola": "#F44336", "Parabola": "#FF9800"}
+        color_badge = colores.get(tipo_curva, "#607D8B")
+        st.markdown(
+            f'<div style="display:inline-block; background:{color_badge}; color:white; '
+            f'padding:8px 24px; border-radius:25px; font-weight:700; font-size:1.1rem; margin:12px 0 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">'
+            f'Cónica Identificada: {tipo_curva}</div>',
+            unsafe_allow_html=True
+        )
 
-        c1, c2, c3 = st.columns([1, 1, 1], gap="medium")
-        with c1:
-            st.markdown("**Coeficientes de la Ecuacion General:**")
-            st.code(
-                f"A (x²) = {round(A,6)}\n"
-                f"B (xy) = {round(B,6)}\n"
-                f"C (y²) = {round(C,6)}\n"
-                f"D (x)  = {round(D_base,6)}\n"
-                f"E (y)  = {round(E_base,6)}\n"
-                f"F      = {round(F_base,6)}",
-                language="python"
-            )
+        with st.container(border=True):
+            st.markdown("### Coeficientes de la Ecuación General")
+            m1, m2, m3, m4, m5 = st.columns(5)
+            m1.metric("A (x²)", round(A, 4))
+            m2.metric("B (y²)", round(B, 4))
+            m3.metric("C (x)", round(C, 4))
+            m4.metric("D (y)", round(D, 4))
+            m5.metric("E", round(E, 4))
+            
+            st.divider()
+            
+            with st.expander("📋 Ver construcción paso a paso de coeficientes"):
+                st.markdown(
+                    f"**Fórmulas aplicadas (Fase 1):**\n\n"
+                    f"- $A = \\frac{{d_1 + d_2}}{{v}} = \\frac{{{d1} + {d2}}}{{{v_aux}}} = {round(A_base, 6)}$\n\n"
+                    f"- $B = \\frac{{d_3 + d_4}}{{v}} = \\frac{{{d3} + {d4}}}{{{v_aux}}} = {round(B_base, 6)}$\n\n"
+                    f"- $C = -(d_5 + d_6) = -({d5} + {d6}) = {round(C_base, 6)}$\n\n"
+                    f"- $D = -(d_7 + d_8) = -({d7} + {d8}) = {round(D_base, 6)}$\n\n"
+                    f"- $E = d_1 + d_3 + d_5 + d_7 = {d1} + {d3} + {d5} + {d7} = {round(E_base, 6)}$\n\n"
+                    f"**Variable auxiliar:** $v = {v_aux}$ "
+                    f"({'DV = K' if v_aux == 10 else 'DV = 0' if v_aux == 11 else f'DV = {v_aux}'})"
+                )
 
-        with c2:
-            st.markdown("**Interpretacion del Discriminante:**")
-            if abs(disc) < 1e-12:
-                st.info(f"B² - 4AC = {disc} = 0 → Parabola")
-            elif disc < 0:
-                if abs(A - C) < 1e-12 and abs(B) < 1e-12 and abs(A) > 1e-12:
-                    st.info(f"B² - 4AC = {disc} < 0 y A = C → Circunferencia")
-                else:
-                    st.info(f"B² - 4AC = {disc} < 0 → Elipse")
-            else:
-                st.info(f"B² - 4AC = {disc} > 0 → Hiperbola")
-
-        with c3:
-            st.markdown("**Procedimiento de Validacion de Credenciales:**")
-            with st.expander("Ver sumatoria manual Modulo 11"):
-                st.text(texto_pasos_rut)
+        st.markdown("")
+        
+        with st.container(border=True):
+            st.markdown("### Validación de Credenciales (Módulo 11)")
+            with st.expander("✓ Ver sumatoria manual del Módulo 11", expanded=False):
+                st.code(texto_pasos_rut, language="text")
 
             if lista_ajustes:
-                st.markdown("**Criterios de Consistencia Aplicados:**")
-                for aj in lista_ajustes:
-                    st.info(aj)
+                st.markdown("### Criterios de Consistencia Aplicados")
+                for idx, aj in enumerate(lista_ajustes, 1):
+                    st.success(f"**Regla {idx}:** {aj}")
 
-        st.markdown("### Desarrollo Algebraico: General → Canonica")
+        st.markdown("")
+        st.divider()
+        st.markdown("")
+
+        st.markdown("""
+        <div style="background:linear-gradient(135deg, #f0f2e8 0%, #f8f6f0 100%);
+                    padding:16px 20px; border-radius:12px; margin-bottom:16px;">
+        <h3 style="margin:0; color:#5d4e37;">🔢 Fase 2: Desarrollo Algebraico (General → Canónica)</h3>
+        </div>""", unsafe_allow_html=True)
+
         col_des, col_gr = st.columns([3, 2], gap="large")
 
         with col_des:
             with st.container(border=True):
-                params = completar_cuadrados(A, B, C, D_base, E_base, F_base, tipo_curva)
-                desglose = generar_desglose_algebraico(A, B, C, D_base, E_base, F_base, tipo_curva, params)
-                st.markdown(desglose)
+                try:
+                    params = completar_cuadrados(A, B, C, D, E, tipo_curva)
+                    desglose = generar_desglose_algebraico(A, B, C, D, E, tipo_curva, params)
+                    st.markdown(desglose)
+                except Exception as err:
+                    st.error(f"❌ Error al calcular forma canónica: {err}")
+                    params = {"tipo": tipo_curva}
 
         with col_gr:
             with st.container(border=True):
-                st.markdown("#### Proyeccion de la Curva")
-                datos_grafico = crear_datos_grafico(tipo_curva, params)
-                curva = datos_grafico["curva"]
-                if curva:
-                    pts_x = [p["x"] for p in curva]
-                    pts_y = [p["y"] for p in curva]
-                    st.line_chart({"x": pts_x, "y": pts_y}, x="x", y="y", use_container_width=True)
-                else:
-                    st.warning("No se pudieron generar puntos para la grafica.")
+                st.markdown("#### 📈 Gráfico de la Curva")
+                try:
+                    datos_grafico = crear_datos_grafico(tipo_curva, params)
+                    curva = datos_grafico["curva"]
+                    if curva:
+                        pts_x = [p["x"] for p in curva]
+                        pts_y = [p["y"] for p in curva]
+                        st.line_chart({"x": pts_x, "y": pts_y}, x="x", y="y", use_container_width=True)
+                    else:
+                        st.warning("⚠️ No se pudieron generar puntos para la gráfica.")
+                except Exception as err:
+                    st.error(f"❌ Error al graficar: {err}")
+                    datos_grafico = {"curva": [], "asintotas": [], "elementos": []}
 
-        st.markdown("### Elementos Geometricos de la Conica")
-        with st.container(border=True):
-            texto_elem = generar_texto_elementos(params)
-            st.markdown(texto_elem)
+        st.markdown("")
+        st.divider()
+        st.markdown("")
 
-        st.markdown("### Representacion Visual de Elementos")
+        st.markdown("""
+        <div style="background:linear-gradient(135deg, #f0e8f8 0%, #f8f0f6 100%);
+                    padding:16px 20px; border-radius:12px; margin-bottom:16px;">
+        <h3 style="margin:0; color:#4a235a;">📍 Fase 3: Elementos Geométricos de la Cónica</h3>
+        </div>""", unsafe_allow_html=True)
+
         with st.container(border=True):
-            datos_graf = crear_datos_grafico(tipo_curva, params)
-            elementos_pts = datos_graf["elementos"]
-            asintotas_pts = datos_graf["asintotas"]
+            st.info("Complete estos campos durante la evaluación oral (sin autocompletado).")
+            col_e1, col_e2, col_e3 = st.columns(3)
+            with col_e1:
+                st.text_input(
+                    "Centro / origen:",
+                    placeholder="(h, k)",
+                    key="oral_centro_tab1"
+                )
+                st.text_input(
+                    "Vértices:",
+                    placeholder="V1(...), V2(...)",
+                    key="oral_vertices_tab1"
+                )
+            with col_e2:
+                st.text_input(
+                    "Focos:",
+                    placeholder="F1(...), F2(...)",
+                    key="oral_focos_tab1"
+                )
+                st.text_input(
+                    "Eje mayor / transverso:",
+                    placeholder="horizontal o vertical",
+                    key="oral_eje_mayor_tab1"
+                )
+            with col_e3:
+                st.text_input(
+                    "Eje menor / conjugado:",
+                    placeholder="valor o descripción",
+                    key="oral_eje_menor_tab1"
+                )
+                st.text_input(
+                    "Directriz (si aplica):",
+                    placeholder="x = ... o y = ...",
+                    key="oral_directriz_tab1"
+                )
+
+        st.markdown("")
+        
+        st.markdown("""
+        <div style="background:linear-gradient(135deg, #e8f8f0 0%, #f0f8f6 100%);
+                    padding:16px 20px; border-radius:12px; margin-bottom:16px;">
+        <h3 style="margin:0; color:#1b5e20;">🗺️ Fase 4: Representación Visual de Elementos</h3>
+        </div>""", unsafe_allow_html=True)
+
+        with st.container(border=True):
+            elementos_pts = datos_grafico["elementos"]
+            asintotas_pts = datos_grafico["asintotas"]
 
             if elementos_pts:
-                st.markdown("**Puntos de interes:**")
+                st.markdown("**🎯 Puntos de Interés:**")
                 e_x = [p["x"] for p in elementos_pts]
                 e_y = [p["y"] for p in elementos_pts]
                 e_labels = [p["label"] for p in elementos_pts]
@@ -148,69 +270,107 @@ if rut_ingresado.strip() and ejecucion:
                     use_container_width=True
                 )
             else:
-                st.info("Datos de elementos geometricos no disponibles.")
+                st.info("ℹ️ Datos de elementos geométricos no disponibles.")
 
-            if asintotas_pts:
-                st.markdown("**Asintotas:**")
-                a_x = [p["x"] for p in asintotas_pts]
-                a_y = [p["y"] for p in asintotas_pts]
-                st.line_chart({"x": a_x, "y": a_y}, x="x", y="y", use_container_width=True)
+            if asintotas_pts or tipo_curva == "Hiperbola":
+                st.markdown("**➡️ Asíntotas Lineales Proyectadas:**")
+                if asintotas_pts:
+                    a_x = [p["x"] for p in asintotas_pts]
+                    a_y = [p["y"] for p in asintotas_pts]
+                    st.line_chart({"x": a_x, "y": a_y}, x="x", y="y", use_container_width=True)
+                else:
+                    st.info("ℹ️ Calculando pendientes límites para las asíntotas de la hipérbola.")
 
     with tab2:
-        st.subheader("Modulo de Analisis Funcional por Tramo")
+        st.markdown("""
+        <div style="background:linear-gradient(135deg, #e8f4f8 0%, #f0f8ee 100%);
+                    padding:16px 20px; border-radius:12px; margin-bottom:16px;">
+        <h3 style="margin:0; color:#1e3a5f;">📈 Módulo de Análisis Funcional por Tramo</h3>
+        </div>""", unsafe_allow_html=True)
 
         residuo_limite = d8 % 3
         a_critico = float(d3)
 
+        iconos_caso = {0: "🕳️", 1: "↕️", 2: "♾️"}
         if residuo_limite == 0:
-            caso_nombre = "Caso 1: Discontinuidad Removible"
-            justificacion_caso = f"d8 ({d8}) es multiplo de 3."
+            caso_nombre = "Discontinuidad Removible (Caso 1)"
         elif residuo_limite == 1:
-            caso_nombre = "Caso 2: Discontinuidad de Salto"
-            justificacion_caso = f"d8 ({d8}) deja residuo 1 al dividirse por 3."
+            caso_nombre = "Discontinuidad de Salto (Caso 2)"
         else:
-            caso_nombre = "Caso 3: Discontinuidad Infinita"
-            justificacion_caso = f"d8 ({d8}) deja residuo 2 al dividirse por 3."
+            caso_nombre = "Discontinuidad Infinita (Caso 3)"
 
-        st.warning(f"Entorno Activo: {caso_nombre} | Punto Critico de Analisis a = {a_critico}")
-        st.caption(f"Justificacion algoritmica de seleccion: {justificacion_caso}")
-
-        st.markdown("### Justificacion Algebraica Automatizada")
+        with st.container(border=True):
+            st.markdown("### Parámetros de la Función")
+            col_caso_a, col_caso_b, col_caso_c = st.columns(3)
+            col_caso_a.metric("Tipo de discontinuidad", caso_nombre)
+            col_caso_b.metric("Punto crítico a", a_critico)
+            col_caso_c.metric("Regla (d8 % 3)", f"d8={d8} → residuo {residuo_limite}")
+        
+        st.markdown("")
+        st.markdown("")
+        st.divider()
+        st.markdown("")
+        
+        st.markdown("""
+        <div style="background:linear-gradient(135deg, #f0e8f8 0%, #f8f0f6 100%);
+                    padding:16px 20px; border-radius:12px; margin-bottom:16px;">
+        <h3 style="margin:0; color:#4a235a;">🧮 Fase 1: Justificación Algebraica Automatizada</h3>
+        </div>""", unsafe_allow_html=True)
+        
         with st.container(border=True):
             if residuo_limite == 0:
-                st.markdown("**Ecuacion asignada (discontinuidad removible):**")
+                st.markdown("**📋 Ecuación asignada (discontinuidad removible):**")
                 st.markdown(f"$$ f(x) = \\frac{{(x - {a_critico})(x + {d1})}}{{x - {a_critico}}}, \\quad x \\neq {a_critico} $$")
-                st.markdown("**Procedimiento:**")
-                st.info(
-                    f"1. En x = {a_critico}, el denominador se anula: f({a_critico}) = 0/0 (indeterminacion).\n\n"
-                    f"2. Simplificando algebraicamente: f(x) = x + {d1}, x ≠ {a_critico}.\n\n"
-                    f"3. El limite cuando x→{a_critico} existe y vale {a_critico + d1}, "
-                    f"pero f({a_critico}) no esta definida (agujero).\n\n"
-                    f"4. Por tanto, la discontinuidad es **removible**."
+                st.markdown("**📌 Procedimiento:**")
+                st.success(
+                    f"✓ En x = {a_critico}, el denominador se anula: f({a_critico}) = 0/0 (indeterminación).\n\n"
+                    f"✓ Simplificando: f(x) = x + {d1}, x ≠ {a_critico}.\n\n"
+                    f"✓ El límite cuando x→{a_critico} existe y vale {a_critico + d1}, pero f({a_critico}) no está definida (agujero).\n\n"
+                    f"✓ Por tanto, la discontinuidad es **removible**."
                 )
             elif residuo_limite == 1:
-                st.markdown("**Ecuacion por tramos asignada:**")
+                st.markdown("**📋 Ecuación por tramos asignada:**")
                 st.markdown(f"$$ f(x) = \\begin{{cases}} x + {d2} & \\text{{si }} x < {a_critico} \\\\ x + {d4} & \\text{{si }} x \\ge {a_critico} \\end{{cases}} $$")
-                st.markdown("**Analisis de Limites Laterales:**")
-                st.info(
-                    f"Limite izquierdo: lim_(x→{a_critico}⁻) (x + {d2}) = {a_critico + d2}.\n\n"
-                    f"Limite derecho: lim_(x→{a_critico}⁺) (x + {d4}) = {a_critico + d4}.\n\n"
-                    f"Al ser {a_critico + d2} ≠ {a_critico + d4}, el limite bilateral no existe.\n\n"
-                    f"Se comprueba analiticamente la existencia de un **salto finito** en x = {a_critico}."
-                )
+                st.markdown("**📌 Análisis de Límites Laterales:**")
+                lim_izq = a_critico + d2
+                lim_der = a_critico + d4
+                if d2 != d4:
+                    st.warning(
+                        f"⚠️ Límite izquierdo: $\\lim_{{x \\to {a_critico}^-}} (x + {d2}) = {lim_izq}$\n\n"
+                        f"⚠️ Límite derecho: $\\lim_{{x \\to {a_critico}^+}} (x + {d4}) = {lim_der}$\n\n"
+                        f"⚠️ Como {lim_izq} ≠ {lim_der}, el límite bilateral **no existe**.\n\n"
+                        f"⚠️ Hay un salto finito de magnitud |{lim_der} - {lim_izq}| = {abs(lim_der - lim_izq)} en x = {a_critico}.\n\n"
+                        f"✓ **Clasificación: Discontinuidad de Salto Finito.**"
+                    )
+                else:
+                    fa = lim_der
+                    st.success(
+                        f"✓ Límite izquierdo: $\\lim_{{x \\to {a_critico}^-}} (x + {d2}) = {lim_izq}$\n\n"
+                        f"✓ Límite derecho: $\\lim_{{x \\to {a_critico}^+}} (x + {d4}) = {lim_der}$\n\n"
+                        f"✓ Como {lim_izq} = {lim_der}, el límite bilateral **existe** y vale {lim_izq}.\n\n"
+                        f"✓ Además, f({a_critico}) = {a_critico} + {d4} = {fa} = límite.\n\n"
+                        f"✓ **La función es continua en x = {a_critico}** (caso especial: d2 = d4)."
+                    )
             else:
-                st.markdown("**Ecuacion asignada (discontinuidad infinita):**")
+                st.markdown("**📋 Ecuación asignada (discontinuidad infinita):**")
                 st.markdown(f"$$ f(x) = \\frac{{{d5} + 1}}{{x - {a_critico}}}, \\quad x \\neq {a_critico} $$")
-                st.markdown("**Analisis Asintotico:**")
-                st.info(
-                    f"1. Cuando x→{a_critico}⁻, el denominador (x - {a_critico}) → 0⁻, "
-                    f"por lo que f(x) → -∞.\n\n"
-                    f"2. Cuando x→{a_critico}⁺, el denominador (x - {a_critico}) → 0⁺, "
-                    f"por lo que f(x) → +∞.\n\n"
-                    f"3. Los limites laterales son infinitos y de distinto signo.\n\n"
-                    f"4. Existe una **asintota vertical** en x = {a_critico}. "
-                    f"La discontinuidad es **infinita/esencial**."
+                st.markdown("**📌 Análisis Asintótico:**")
+                st.error(
+                    f"✗ Cuando x→{a_critico}⁻, el denominador (x - {a_critico}) → 0⁻, por lo que f(x) → -∞.\n\n"
+                    f"✗ Cuando x→{a_critico}⁺, el denominador (x - {a_critico}) → 0⁺, por lo que f(x) → +∞.\n\n"
+                    f"✗ Los límites laterales son infinitos y de distinto signo.\n\n"
+                    f"✗ Existe una **asíntota vertical** en x = {a_critico}. La discontinuidad es **infinita/esencial**."
                 )
+
+        st.markdown("")
+        st.divider()
+        st.markdown("")
+
+        st.markdown("""
+        <div style="background:linear-gradient(135deg, #e8f8f0 0%, #f0f8f6 100%);
+                    padding:16px 20px; border-radius:12px; margin-bottom:16px;">
+        <h3 style="margin:0; color:#1b5e20;">📊 Fase 2: Evidencia Numérica por Aproximación</h3>
+        </div>""", unsafe_allow_html=True)
 
         h_izq = [1.0, 0.1, 0.01, 0.001]
         h_der = [0.001, 0.01, 0.1, 1.0]
@@ -243,87 +403,337 @@ if rut_ingresado.strip() and ejecucion:
                 y_v = (d5 + 1) / (x_v - a_critico)
             t_der.append({"x": round(x_v, 3), "f(x)": round(y_v, 4) if y_v is not None else "No def."})
 
-        st.markdown("### Evidencia Numerica Lateral (Contraste)")
-        c_t1, c_t2 = st.columns(2, gap="medium")
-        with c_t1:
-            with st.container(border=True):
-                st.markdown("**Aproximacion por la Izquierda ($x \\to a^-$)**")
+        st.markdown("")
+        
+        with st.container(border=True):
+            st.markdown("### Tablas de Aproximación Numérica")
+            c_t1, c_t2 = st.columns(2, gap="large")
+            with c_t1:
+                st.markdown("**🔵 Aproximación Izquierda** ($x \\to a^-$)")
                 st.table(t_izq)
-        with c_t2:
-            with st.container(border=True):
-                st.markdown("**Aproximacion por la Derecha ($x \\to a^+$)**")
+            with c_t2:
+                st.markdown("**🔴 Aproximación Derecha** ($x \\to a^+$)")
                 st.table(t_der)
 
-        st.markdown("### Representacion Grafica por Tramos")
+        st.markdown("")
+        st.divider()
+        st.markdown("")
+
+        st.markdown("""
+        <div style="background:linear-gradient(135deg, #f8e8e8 0%, #f8f0f0 100%);
+                    padding:16px 20px; border-radius:12px; margin-bottom:16px;">
+        <h3 style="margin:0; color:#b71c1c;">📉 Fase 3: Representación Gráfica por Tramos</h3>
+        </div>""", unsafe_allow_html=True)
         with st.container(border=True):
-            puntos_eje_y = []
-            rango_x = [a_critico + (step / 10.0) for step in range(-20, 21)]
-            for x in rango_x:
-                if abs(x - a_critico) < 1e-12:
-                    puntos_eje_y.append(None)
-                    continue
-                if x < a_critico:
-                    if residuo_limite == 0:
-                        y_val = (x - a_critico) * (x + d1) / (x - a_critico)
-                    elif residuo_limite == 1:
+            if residuo_limite == 0:
+                # CASO 0: REMOVIBLE - Recta con agujero
+                chart_x = []
+                chart_y = []
+                rango_x = [a_critico + (step / 10.0) for step in range(-20, 21)]
+                agujero_x = a_critico
+                agujero_y = a_critico + d1
+                
+                for x in rango_x:
+                    if abs(x - a_critico) < 0.05:  # Excluir zona muy cercana al punto crítico
+                        continue
+                    y_val = x + d1
+                    if abs(y_val) < 100:
+                        chart_x.append(round(x, 2))
+                        chart_y.append(round(y_val, 4))
+                
+                # Graficar recta
+                st.line_chart({"x": chart_x, "f(x)": chart_y}, x="x", y="f(x)", use_container_width=True)
+                
+                # Mostrar agujero como punto abierto
+                st.markdown(f"""
+                <div style="text-align:center; margin:10px 0; font-size:0.9rem; color:#d32f2f;">
+                <b>🕳️ Agujero (discontinuidad removible)</b><br>
+                Punto faltante: ({agujero_x}, {agujero_y})
+                </div>""", unsafe_allow_html=True)
+                st.caption(f"📍 Recta: f(x) = x + {d1} | Agujero en x = {a_critico}")
+                
+            elif residuo_limite == 1:
+                # CASO 1: SALTO - Dos segmentos separados
+                chart_x_izq = []
+                chart_y_izq = []
+                chart_x_der = []
+                chart_y_der = []
+                rango_x = [a_critico + (step / 10.0) for step in range(-20, 21)]
+                
+                for x in rango_x:
+                    if abs(x - a_critico) < 0.05:
+                        continue
+                    if x < a_critico:
                         y_val = x + d2
+                        if abs(y_val) < 100:
+                            chart_x_izq.append(round(x, 2))
+                            chart_y_izq.append(round(y_val, 4))
                     else:
-                        y_val = (d5 + 1) / (x - a_critico)
-                else:
-                    if residuo_limite == 0:
-                        y_val = (x - a_critico) * (x + d1) / (x - a_critico)
-                    elif residuo_limite == 1:
                         y_val = x + d4
+                        if abs(y_val) < 100:
+                            chart_x_der.append(round(x, 2))
+                            chart_y_der.append(round(y_val, 4))
+                
+                # Combinar pero manteniendo la separación visual
+                if chart_x_izq and chart_x_der:
+                    grafico_data = {}
+                    if chart_x_izq:
+                        grafico_data["x_izq"] = chart_x_izq + [None] * len(chart_x_der)
+                        grafico_data["f_izq"] = chart_y_izq + [None] * len(chart_y_der)
+                    if chart_x_der:
+                        grafico_data["x_der"] = [None] * len(chart_x_izq) + chart_x_der
+                        grafico_data["f_der"] = [None] * len(chart_y_izq) + chart_y_der
+                    
+                    # Usar scatter para mostrar separación clara
+                    col_scatter_a, col_scatter_b = st.columns(2)
+                    with col_scatter_a:
+                        st.markdown("**🔵 Rama Izquierda** (x < a)")
+                        st.line_chart({"x": chart_x_izq, "f(x)": chart_y_izq}, x="x", y="f(x)", use_container_width=True)
+                    with col_scatter_b:
+                        st.markdown("**🔴 Rama Derecha** (x ≥ a)")
+                        st.line_chart({"x": chart_x_der, "f(x)": chart_y_der}, x="x", y="f(x)", use_container_width=True)
+                
+                lim_izq = a_critico + d2
+                lim_der = a_critico + d4
+                salto = abs(lim_der - lim_izq)
+                
+                st.markdown(f"""
+                <div style="text-align:center; margin:10px 0; padding:8px; background:#fff3e0; border-radius:6px; font-size:0.9rem;">
+                <b>↕️ Salto Finito</b><br>
+                lim⁻ = {lim_izq} | lim⁺ = {lim_der} | Magnitud del salto = {salto}
+                </div>""", unsafe_allow_html=True)
+                st.caption(f"📍 Punto crítico: x = {a_critico} | f(x) = x + d2 si x < a | f(x) = x + d4 si x ≥ a")
+                
+            else:
+                # CASO 2: INFINITA - Dos ramas con asíntota vertical
+                chart_x_izq = []
+                chart_y_izq = []
+                chart_x_der = []
+                chart_y_der = []
+                rango_x = [a_critico + (step / 10.0) for step in range(-20, 21)]
+                
+                for x in rango_x:
+                    if abs(x - a_critico) < 0.1:
+                        continue
+                    y_val = (d5 + 1) / (x - a_critico)
+                    if -150 < y_val < 150:  # Filtrar valores muy grandes
+                        if x < a_critico:
+                            chart_x_izq.append(round(x, 2))
+                            chart_y_izq.append(round(y_val, 4))
+                        else:
+                            chart_x_der.append(round(x, 2))
+                            chart_y_der.append(round(y_val, 4))
+                
+                # Mostrar dos ramas separadas
+                col_rama_a, col_rama_b = st.columns(2)
+                with col_rama_a:
+                    st.markdown("**🟣 Rama Izquierda** (x → a⁻)")
+                    if chart_x_izq:
+                        st.line_chart({"x": chart_x_izq, "f(x)": chart_y_izq}, x="x", y="f(x)", use_container_width=True)
+                        st.caption(f"Comportamiento: f(x) → -∞ cuando x → {a_critico}⁻")
                     else:
-                        y_val = (d5 + 1) / (x - a_critico)
-                puntos_eje_y.append(y_val if (y_val is not None and abs(y_val) < 150) else None)
-            st.line_chart(puntos_eje_y, use_container_width=True)
+                        st.info("Sin puntos graficables en esta rama")
+                
+                with col_rama_b:
+                    st.markdown("**🟠 Rama Derecha** (x → a⁺)")
+                    if chart_x_der:
+                        st.line_chart({"x": chart_x_der, "f(x)": chart_y_der}, x="x", y="f(x)", use_container_width=True)
+                        st.caption(f"Comportamiento: f(x) → +∞ cuando x → {a_critico}⁺")
+                    else:
+                        st.info("Sin puntos graficables en esta rama")
+                
+                st.markdown(f"""
+                <div style="text-align:center; margin:10px 0; padding:8px; background:#ffebee; border-radius:6px; font-size:0.9rem;">
+                <b>♾️ Asíntota Vertical</b><br>
+                x = {a_critico} es asíntota vertical | Límites laterales: lim⁻ = -∞, lim⁺ = +∞
+                </div>""", unsafe_allow_html=True)
 
     with tab3:
-        st.subheader("Panel de Auditoria y Verificacion Analitica")
-        st.caption("Campos en blanco obligatorios de acuerdo a las Fases 4 y 6 de la rubrica.")
+        st.markdown("""
+        <div style="background:linear-gradient(135deg, #e8f4f8 0%, #f0f8ee 100%);
+                    padding:16px 20px; border-radius:12px; margin-bottom:16px;">
+        <h3 style="margin:0; color:#1e3a5f;">🛡️ Panel de Auditoría para Defensa Oral</h3>
+        <p style="margin:6px 0 0 0; font-size:0.9rem; opacity:0.85;">Complete los campos durante la defensa oral</p>
+        </div>""", unsafe_allow_html=True)
 
+        # =====================================================================
+        # SECCION A: COEFICIENTES Y CLASIFICACION (Fase 4 - Criterios 18 a 24)
+        # =====================================================================
+        st.markdown("""
+        <div style="background:#e8f4f8; border-left:5px solid #2d6a9f;
+                    padding:14px 16px; border-radius:6px; margin:16px 0;">
+        <b style="font-size:1.05rem;">📐 SECCIÓN A: Cónica — Coeficientes y Clasificación</b><br>
+        <small style="opacity:0.85;">El sistema genera los valores. El estudiante justifica matemáticamente la clasificación.</small>
+        </div>""", unsafe_allow_html=True)
+        
         with st.container(border=True):
-            st.markdown("#### Componente A: Elementos Estructurales de la Conica")
-            r1, r2, r3 = st.columns(3)
-            with r1:
-                st.text_input("Ubicacion del Centro u Origen (h, k):", placeholder="Esperando analisis...", key="v_h")
-            with r2:
-                st.text_input("Coordenadas de los Vertices:", placeholder="Esperando analisis...", key="v_k")
-            with r3:
-                st.text_input("Coordenadas de los Focos Asociados:", placeholder="Ejemplo: F(h+c, k)", key="v_foc")
 
-        st.markdown("## ")
-
-        with st.container(border=True):
-            st.markdown("#### Componente B: Comportamiento de Limites y Continuidad")
-            st.markdown("**Complete los siguientes campos manualmente durante la defensa:**")
-            r4, r5, r6 = st.columns(3)
-            with r4:
-                st.text_input("Valor del Limite Lateral Izquierdo:", placeholder="Numerico o infinito...", key="v_lizq")
-            with r5:
-                st.text_input("Valor del Limite Lateral Derecho:", placeholder="Numerico o infinito...", key="v_lder")
-            with r6:
+            row_a1, row_a2 = st.columns([1, 1], gap="large")
+            
+            with row_a1:
+                st.markdown("### Coeficientes Calculados")
+                st.number_input("Coeficiente A (x²):", value=round(A, 6), disabled=True, key="coef_a")
+                st.number_input("Coeficiente B (y²):", value=round(B, 6), disabled=True, key="coef_b")
+                st.number_input("Coeficiente C (x):", value=round(C, 6), disabled=True, key="coef_c")
+                st.number_input("Coeficiente D (y):", value=round(D, 6), disabled=True, key="coef_d")
+                st.number_input("Coeficiente E (cte):", value=round(E, 6), disabled=True, key="coef_e")
+                
+            with row_a2:
+                st.markdown("### Clasificacion de Conica")
                 st.selectbox(
-                    "Dictamen Final de Continuidad:",
-                    [
-                        "Seleccione una alternativa...",
-                        "Funcion Continua en el punto de corte",
-                        "Discontinuidad Evitable / Removible",
-                        "Discontinuidad de Salto Finito",
-                        "Discontinuidad Esencial / Infinita"
-                    ],
-                    key="v_cont"
+                    "Tipo de cónica identificado:",
+                    ["Seleccionar...", "Circunferencia", "Elipse", "Hiperbola", "Parabola"],
+                    key="conica_tipo_auditar"
+                )
+                st.text_area(
+                    "Justificacion de la clasificacion (¿Por qué se determinó este tipo?):",
+                    placeholder="Ej: A≠0, B≠0, A≠B, A·B>0 → Elipse; o A=0 o B=0 → Parabola",
+                    height=150,
+                    key="clasificacion_justi"
+                )
+            
+            st.markdown("---")
+            
+            # Elementos geometricos (Criterion 23-24)
+            st.markdown("### Elementos Geometricos Canonicos")
+            col_elem_a, col_elem_b, col_elem_c = st.columns(3)
+            
+            with col_elem_a:
+                st.text_input(
+                    "Centro u Origen (h, k):",
+                    placeholder="Ej: (1, -2) o (0, 0)",
+                    key="elem_centro"
+                )
+            
+            with col_elem_b:
+                st.text_input(
+                    "Vertices (principales):",
+                    placeholder="Ej: V(3, 0), V(-3, 0)",
+                    key="elem_vertices"
+                )
+            
+            with col_elem_c:
+                st.text_input(
+                    "Focos (si existen):",
+                    placeholder="Ej: F(2.24, 0), F(-2.24, 0)",
+                    key="elem_focos"
+                )
+            
+            # Parametros especiales (Criterion 25)
+            col_param_a, col_param_b, col_param_c = st.columns(3)
+            
+            with col_param_a:
+                st.text_input(
+                    "Eje de simetria (si aplica):",
+                    placeholder="Ej: y = 0 (eje x) o x = 1",
+                    key="elem_ejes"
+                )
+            
+            with col_param_b:
+                st.text_input(
+                    "Directriz (solo para parabola):",
+                    placeholder="Ej: y = -2 o x = 3",
+                    key="elem_directriz"
+                )
+            
+            with col_param_c:
+                st.text_input(
+                    "Ecuacion Canonica (forma transformada):",
+                    placeholder="Ej: (x-h)²/a² + (y-k)²/b² = 1",
+                    key="elem_canonica"
                 )
 
+        st.markdown("")
+        st.divider()
+        st.markdown("")
+
+        # =====================================================================
+        # SECCION B: LIMITES Y CONTINUIDAD (Fase 6 - Criterios 26 a 32)
+        # =====================================================================
+        st.markdown("""
+        <div style="background:#f0f8ee; border-left:5px solid #4CAF50;
+                    padding:14px 16px; border-radius:6px; margin:16px 0;">
+        <b style="font-size:1.05rem;">📈 SECCIÓN B: Límites y Continuidad Funcional</b><br>
+        <small style="opacity:0.85;">Analice la función por tramos generada desde d8. Complete los valores durante la defensa.</small>
+        </div>""", unsafe_allow_html=True)
+
+        with st.container(border=True):
+
+            row_b1, row_b2 = st.columns([1, 1], gap="large")
+            
+            with row_b1:
+                st.markdown("### Limites Laterales")
+                st.text_input(
+                    "Limite cuando x → a⁻ (por la izquierda):",
+                    placeholder="Valor numerico, ±∞, o No existe",
+                    key="limite_izq_valor"
+                )
+                st.text_input(
+                    "Limite cuando x → a⁺ (por la derecha):",
+                    placeholder="Valor numerico, ±∞, o No existe",
+                    key="limite_der_valor"
+                )
+                st.text_input(
+                    "Valor de f(a) en el punto critico:",
+                    placeholder="Indefinido, o valor numerico",
+                    key="f_punto_critico"
+                )
+                st.selectbox(
+                    "Existe el limite bilateral:",
+                    ["Seleccionar...", "Si existe", "No existe (salto)", "No existe (infinito)"],
+                    key="limite_existe"
+                )
+            
+            with row_b2:
+                st.markdown("### Clasificacion de Discontinuidad")
+                st.selectbox(
+                    "Tipo de discontinuidad detectado:",
+                    [
+                        "Seleccionar...",
+                        "Continua (sin discontinuidad)",
+                        "Removible / Evitable",
+                        "Salto Finito",
+                        "Esencial / Infinita"
+                    ],
+                    key="discontinuidad_tipo_auditar"
+                )
+                st.text_area(
+                    "Justificacion de la clasificacion:",
+                    placeholder="Ej: Removible si lim existe pero f(a) no; Salto si lim⁻≠lim⁺; Infinita si lim=±∞",
+                    height=120,
+                    key="discontinuidad_justi"
+                )
+            
             st.markdown("---")
-            r7, r8, r9 = st.columns(3)
-            with r7:
-                st.text_input("Valor de f(a) en el punto critico:", placeholder="Indefinido / valor numerico...", key="v_fa")
-            with r8:
-                st.text_input("El limite bilateral existe:", placeholder="Si / No / No aplica...", key="v_existe")
-            with r9:
-                st.text_input("Justificacion matematica:", placeholder="Escriba su justificacion...", key="v_just")
+            
+            # Procedimiento de comprobacion
+            st.markdown("### Evidencia de Comprobacion Numerica")
+            col_comp_a, col_comp_b = st.columns(2)
+            
+            with col_comp_a:
+                st.text_area(
+                    "Tabla de valores izquierda (x→a⁻):",
+                    placeholder="Muestre pasos de aproximacion x = a-0.1, a-0.01, etc.",
+                    height=100,
+                    key="tabla_izq"
+                )
+            
+            with col_comp_b:
+                st.text_area(
+                    "Tabla de valores derecha (x→a⁺):",
+                    placeholder="Muestre pasos de aproximacion x = a+0.001, a+0.01, etc.",
+                    height=100,
+                    key="tabla_der"
+                )
+            
+            # Conclusion y propuesta
+            st.markdown("---")
+            st.text_area(
+                "Conclusion final (Comportamiento de la funcion en el punto de analisis):",
+                placeholder="Describa el comportamiento de f(x) en el entorno de x=a. ¿Qué tipo de discontinuidad es? ¿Cómo se podría remover o clasificar?",
+                height=120,
+                key="conclusion_limites"
+            )
 
 elif rut_ingresado.strip() and not ejecucion:
     st.info("Estructurando entorno seguro. Por favor ingrese un formato de RUT valido.")
