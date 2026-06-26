@@ -100,6 +100,8 @@ def completar_cuadrados(A, B, C, D, E, tipo):
         p["h"] = round(h, 4)
         p["k"] = round(k, 4)
         p["radio"] = round(r_val, 4)
+        p["r_cuad"] = round(r_cuad, 6)
+        p["imaginaria"] = r_cuad < 0
         p["centro"] = (p["h"], p["k"])
         p["focos"] = [(p["h"], p["k"])]
         p["vertices"] = [(p["h"], p["k"])]

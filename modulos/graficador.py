@@ -144,7 +144,18 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
         pv = params.get("p", 1.0)
         eje = params.get("eje", "vertical")
         if abs(pv) < 1e-12:
-            return []
+            # Parabola degenerada: D=0 o C=0 → dibujar linea vertical x=h o horizontal y=k
+            h_d = params.get("h", 0.0)
+            k_d = params.get("k", 0.0)
+            if eje == "vertical":
+                for i in range(num_puntos + 1):
+                    yv = k_d - rango / 2.0 + (i / num_puntos) * rango
+                    puntos.append({"x": round(h_d, 6), "y": round(yv, 6)})
+            else:
+                for i in range(num_puntos + 1):
+                    xv = h_d - rango / 2.0 + (i / num_puntos) * rango
+                    puntos.append({"x": round(xv, 6), "y": round(k_d, 6)})
+            return puntos
         if eje == "vertical":
             for i in range(num_puntos + 1):
                 xv = h - rango / 2.0 + (i / num_puntos) * rango

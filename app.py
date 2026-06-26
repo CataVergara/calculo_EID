@@ -214,6 +214,18 @@ if rut_ingresado.strip() and ejecucion:
                             x="x", y="y", color="serie",
                             use_container_width=True
                         )
+                    elif tipo_curva == "Circunferencia" and params.get("imaginaria", False):
+                        r2_val = params.get("r_cuad", 0)
+                        h_v, k_v = params.get("h", 0), params.get("k", 0)
+                        st.warning("⚠️ Circunferencia imaginaria: no existen puntos reales.")
+                        st.markdown(
+                            f"> **Explicación matemática:** Al completar cuadrados, el radio² calculado "
+                            f"es $r^2 = {r2_val} < 0$.  \n"
+                            f"> Esto significa que la ecuación $Ax^2 + By^2 + Cx + Dy + E = 0$ "
+                            f"generada por este RUT no tiene solución real en el plano cartesiano.  \n"
+                            f"> El centro sería $({h_v}, {k_v})$ pero no existe ningún punto $(x, y)$ "
+                            f"que satisfaga la ecuación."
+                        )
                     else:
                         st.warning("⚠️ No se pudieron generar puntos para la gráfica.")
                 except Exception as err:
@@ -342,12 +354,21 @@ if rut_ingresado.strip() and ejecucion:
             if residuo_limite == 0:
                 st.markdown("**📋 Ecuación asignada (discontinuidad removible):**")
                 st.markdown(f"$$ f(x) = \\frac{{(x - {a_critico})(x + {d1})}}{{x - {a_critico}}}, \\quad x \\neq {a_critico} $$")
-                st.markdown("**📌 Procedimiento:**")
+                st.markdown("**📌 Procedimiento paso a paso:**")
+                st.markdown(
+                    f"**Paso 1.** Identificar la indeterminación: al evaluar $x = {a_critico}$, el numerador y denominador se anulan simultáneamente:"
+                )
+                st.markdown(f"$$ f({a_critico}) = \\frac{{({a_critico} - {a_critico})({a_critico} + {d1})}}{{{a_critico} - {a_critico}}} = \\frac{{0 \\cdot {a_critico + d1}}}{{0}} \\quad \\text{{(indeterminación 0/0)}} $$")
+                st.markdown(
+                    f"**Paso 2.** Simplificar cancelando el factor común $(x - {a_critico})$:"
+                )
+                st.markdown(f"$$ f(x) = \\frac{{\\cancel{{(x - {a_critico})}}(x + {d1})}}{{\\cancel{{(x - {a_critico})}}}} = x + {d1}, \\quad x \\neq {a_critico} $$")
+                st.markdown(f"**Paso 3.** Calcular el límite y verificar continuidad en $x = {a_critico}$:")
+                st.markdown(f"$$ \\lim_{{x \\to {a_critico}}} f(x) = {a_critico} + {d1} = {a_critico + d1} $$")
                 st.success(
-                    f"✓ En x = {a_critico}, el denominador se anula: f({a_critico}) = 0/0 (indeterminación).\n\n"
-                    f"✓ Simplificando: f(x) = x + {d1}, x ≠ {a_critico}.\n\n"
-                    f"✓ El límite cuando x→{a_critico} existe y vale {a_critico + d1}, pero f({a_critico}) no está definida (agujero).\n\n"
-                    f"✓ Por tanto, la discontinuidad es **removible**."
+                    f"✓ El límite existe y vale {a_critico + d1}.\n\n"
+                    f"✓ Sin embargo, f({a_critico}) no está definida en la función original (agujero en la gráfica).\n\n"
+                    f"✓ Como el límite existe pero f(a) no está definida → **Discontinuidad Removible**."
                 )
             elif residuo_limite == 1:
                 st.markdown("**📋 Ecuación por tramos asignada:**")
