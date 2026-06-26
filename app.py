@@ -10,6 +10,11 @@ from modulos.conicas import (
     generar_texto_elementos
 )
 from modulos.graficador import crear_datos_grafico
+from modulos.limites import (
+    obtener_tabla_aproximacion,
+    obtener_puntos_grafica,
+    obtener_texto_justificacion
+)
 
 st.set_page_config(
     page_title="MAT1186 - Análisis de Cónicas",
@@ -197,10 +202,16 @@ if rut_ingresado.strip() and ejecucion:
                 try:
                     datos_grafico = crear_datos_grafico(tipo_curva, params)
                     curva = datos_grafico["curva"]
+                    ejes = datos_grafico.get("ejes", [])
                     if curva:
-                        pts_x = [p["x"] for p in curva]
-                        pts_y = [p["y"] for p in curva]
-                        st.line_chart({"x": pts_x, "y": pts_y}, x="x", y="y", use_container_width=True)
+                        pts_x = [p["x"] for p in curva] + [p["x"] for p in ejes]
+                        pts_y = [p["y"] for p in curva] + [p["y"] for p in ejes]
+                        pts_s = ["curva"] * len(curva) + [p["label"] for p in ejes]
+                        st.line_chart(
+                            {"x": pts_x, "y": pts_y, "serie": pts_s},
+                            x="x", y="y", color="serie",
+                            use_container_width=True
+                        )
                     else:
                         st.warning("⚠️ No se pudieron generar puntos para la gráfica.")
                 except Exception as err:
@@ -297,6 +308,7 @@ if rut_ingresado.strip() and ejecucion:
 
         residuo_limite = d8 % 3
         a_critico = float(d3)
+        caso_label = ["Removible", "De Salto", "Infinita"][residuo_limite]
 
         iconos_caso = {0: "🕳️", 1: "↕️", 2: "♾️"}
         if residuo_limite == 0:
@@ -379,36 +391,7 @@ if rut_ingresado.strip() and ejecucion:
         <h3 style="margin:0; color:#1b5e20;">📊 Fase 2: Evidencia Numérica por Aproximación</h3>
         </div>""", unsafe_allow_html=True)
 
-        h_izq = [1.0, 0.1, 0.01, 0.001]
-        h_der = [0.001, 0.01, 0.1, 1.0]
-
-        t_izq = []
-        for h in h_izq:
-            x_v = a_critico - h
-            if residuo_limite == 0:
-                if abs(x_v - a_critico) < 1e-12:
-                    y_v = None
-                else:
-                    y_v = (x_v - a_critico) * (x_v + d1) / (x_v - a_critico)
-            elif residuo_limite == 1:
-                y_v = x_v + d2
-            else:
-                y_v = (d5 + 1) / (x_v - a_critico)
-            t_izq.append({"x": round(x_v, 3), "f(x)": round(y_v, 4) if y_v is not None else "No def."})
-
-        t_der = []
-        for h in h_der:
-            x_v = a_critico + h
-            if residuo_limite == 0:
-                if abs(x_v - a_critico) < 1e-12:
-                    y_v = None
-                else:
-                    y_v = (x_v - a_critico) * (x_v + d1) / (x_v - a_critico)
-            elif residuo_limite == 1:
-                y_v = x_v + d4
-            else:
-                y_v = (d5 + 1) / (x_v - a_critico)
-            t_der.append({"x": round(x_v, 3), "f(x)": round(y_v, 4) if y_v is not None else "No def."})
+        t_izq, t_der = obtener_tabla_aproximacion(caso_label, digitos, a_critico)
 
         st.markdown("")
         
@@ -432,128 +415,8 @@ if rut_ingresado.strip() and ejecucion:
         <h3 style="margin:0; color:#b71c1c;">📉 Fase 3: Representación Gráfica por Tramos</h3>
         </div>""", unsafe_allow_html=True)
         with st.container(border=True):
-            if residuo_limite == 0:
-                # CASO 0: REMOVIBLE - Recta con agujero
-                chart_x = []
-                chart_y = []
-                rango_x = [a_critico + (step / 10.0) for step in range(-20, 21)]
-                agujero_x = a_critico
-                agujero_y = a_critico + d1
-                
-                for x in rango_x:
-                    if abs(x - a_critico) < 0.05:  # Excluir zona muy cercana al punto crítico
-                        continue
-                    y_val = x + d1
-                    if abs(y_val) < 100:
-                        chart_x.append(round(x, 2))
-                        chart_y.append(round(y_val, 4))
-                
-                # Graficar recta
-                st.line_chart({"x": chart_x, "f(x)": chart_y}, x="x", y="f(x)", use_container_width=True)
-                
-                # Mostrar agujero como punto abierto
-                st.markdown(f"""
-                <div style="text-align:center; margin:10px 0; font-size:0.9rem; color:#d32f2f;">
-                <b>🕳️ Agujero (discontinuidad removible)</b><br>
-                Punto faltante: ({agujero_x}, {agujero_y})
-                </div>""", unsafe_allow_html=True)
-                st.caption(f"📍 Recta: f(x) = x + {d1} | Agujero en x = {a_critico}")
-                
-            elif residuo_limite == 1:
-                # CASO 1: SALTO - Dos segmentos separados
-                chart_x_izq = []
-                chart_y_izq = []
-                chart_x_der = []
-                chart_y_der = []
-                rango_x = [a_critico + (step / 10.0) for step in range(-20, 21)]
-                
-                for x in rango_x:
-                    if abs(x - a_critico) < 0.05:
-                        continue
-                    if x < a_critico:
-                        y_val = x + d2
-                        if abs(y_val) < 100:
-                            chart_x_izq.append(round(x, 2))
-                            chart_y_izq.append(round(y_val, 4))
-                    else:
-                        y_val = x + d4
-                        if abs(y_val) < 100:
-                            chart_x_der.append(round(x, 2))
-                            chart_y_der.append(round(y_val, 4))
-                
-                # Combinar pero manteniendo la separación visual
-                if chart_x_izq and chart_x_der:
-                    grafico_data = {}
-                    if chart_x_izq:
-                        grafico_data["x_izq"] = chart_x_izq + [None] * len(chart_x_der)
-                        grafico_data["f_izq"] = chart_y_izq + [None] * len(chart_y_der)
-                    if chart_x_der:
-                        grafico_data["x_der"] = [None] * len(chart_x_izq) + chart_x_der
-                        grafico_data["f_der"] = [None] * len(chart_y_izq) + chart_y_der
-                    
-                    # Usar scatter para mostrar separación clara
-                    col_scatter_a, col_scatter_b = st.columns(2)
-                    with col_scatter_a:
-                        st.markdown("**🔵 Rama Izquierda** (x < a)")
-                        st.line_chart({"x": chart_x_izq, "f(x)": chart_y_izq}, x="x", y="f(x)", use_container_width=True)
-                    with col_scatter_b:
-                        st.markdown("**🔴 Rama Derecha** (x ≥ a)")
-                        st.line_chart({"x": chart_x_der, "f(x)": chart_y_der}, x="x", y="f(x)", use_container_width=True)
-                
-                lim_izq = a_critico + d2
-                lim_der = a_critico + d4
-                salto = abs(lim_der - lim_izq)
-                
-                st.markdown(f"""
-                <div style="text-align:center; margin:10px 0; padding:8px; background:#fff3e0; border-radius:6px; font-size:0.9rem;">
-                <b>↕️ Salto Finito</b><br>
-                lim⁻ = {lim_izq} | lim⁺ = {lim_der} | Magnitud del salto = {salto}
-                </div>""", unsafe_allow_html=True)
-                st.caption(f"📍 Punto crítico: x = {a_critico} | f(x) = x + d2 si x < a | f(x) = x + d4 si x ≥ a")
-                
-            else:
-                # CASO 2: INFINITA - Dos ramas con asíntota vertical
-                chart_x_izq = []
-                chart_y_izq = []
-                chart_x_der = []
-                chart_y_der = []
-                rango_x = [a_critico + (step / 10.0) for step in range(-20, 21)]
-                
-                for x in rango_x:
-                    if abs(x - a_critico) < 0.1:
-                        continue
-                    y_val = (d5 + 1) / (x - a_critico)
-                    if -150 < y_val < 150:  # Filtrar valores muy grandes
-                        if x < a_critico:
-                            chart_x_izq.append(round(x, 2))
-                            chart_y_izq.append(round(y_val, 4))
-                        else:
-                            chart_x_der.append(round(x, 2))
-                            chart_y_der.append(round(y_val, 4))
-                
-                # Mostrar dos ramas separadas
-                col_rama_a, col_rama_b = st.columns(2)
-                with col_rama_a:
-                    st.markdown("**🟣 Rama Izquierda** (x → a⁻)")
-                    if chart_x_izq:
-                        st.line_chart({"x": chart_x_izq, "f(x)": chart_y_izq}, x="x", y="f(x)", use_container_width=True)
-                        st.caption(f"Comportamiento: f(x) → -∞ cuando x → {a_critico}⁻")
-                    else:
-                        st.info("Sin puntos graficables en esta rama")
-                
-                with col_rama_b:
-                    st.markdown("**🟠 Rama Derecha** (x → a⁺)")
-                    if chart_x_der:
-                        st.line_chart({"x": chart_x_der, "f(x)": chart_y_der}, x="x", y="f(x)", use_container_width=True)
-                        st.caption(f"Comportamiento: f(x) → +∞ cuando x → {a_critico}⁺")
-                    else:
-                        st.info("Sin puntos graficables en esta rama")
-                
-                st.markdown(f"""
-                <div style="text-align:center; margin:10px 0; padding:8px; background:#ffebee; border-radius:6px; font-size:0.9rem;">
-                <b>♾️ Asíntota Vertical</b><br>
-                x = {a_critico} es asíntota vertical | Límites laterales: lim⁻ = -∞, lim⁺ = +∞
-                </div>""", unsafe_allow_html=True)
+            puntos_eje_y = obtener_puntos_grafica(caso_label, digitos, a_critico, rango=2.0, pasos=40)
+            st.line_chart(puntos_eje_y, use_container_width=True)
 
     with tab3:
         st.markdown("""

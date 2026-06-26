@@ -54,3 +54,46 @@ def obtener_tabla_aproximacion(caso, d, a):
         datos_der.append({"x": round(x_val, 3), "f(x)": round(y_val, 4) if y_val is not None else "No Def"})
         
     return datos_izq, datos_der
+
+
+def obtener_puntos_grafica(caso, d, a, rango=2.0, pasos=40):
+    puntos = []
+    for i in range(pasos + 1):
+        x_val = a - rango + (i / pasos) * (2.0 * rango)
+        if abs(x_val - a) < 1e-6:
+            continue
+        y_val = evaluar_tramos_manualmente(x_val, caso, d, a)
+        if y_val is not None and abs(y_val) < 1e6:
+            puntos.append({"x": round(x_val, 4), "y": round(y_val, 4)})
+    return puntos
+
+
+def obtener_texto_justificacion(caso, d, a):
+    d1 = d[-8] if len(d) == 8 else 0
+    d2 = d[-7]
+    d4 = d[-5]
+    d5 = d[-4]
+    
+    if "Removible" in caso:
+        return (
+            f"Indeterminacion 0/0 en x={a}. "
+            f"Simplificando: f(x) = x + {d1}, x != {a}. "
+            f"Limite bilateral = {a + d1}. "
+            f"Como f({a}) no esta definida, la discontinuidad es removible."
+        )
+    elif "De Salto" in caso:
+        lim_izq = a + d2
+        lim_der = a + d4
+        if lim_izq == lim_der:
+            return f"Ambos limites laterales coinciden ({lim_izq}). La funcion es continua en x={a}."
+        return (
+            f"Limite izquierdo = {lim_izq}, limite derecho = {lim_der}. "
+            f"Como {lim_izq} != {lim_der}, el limite bilateral no existe. "
+            f"Hay un salto de magnitud {abs(lim_der - lim_izq)}."
+        )
+    else:
+        return (
+            f"Cuando x->{a} por izquierda, f(x) -> -inf. "
+            f"Cuando x->{a} por derecha, f(x) -> +inf. "
+            f"Por tanto, x={a} es una asintota vertical y la discontinuidad es infinita."
+        )

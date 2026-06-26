@@ -36,7 +36,7 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
             if raiz is None:
                 continue
             puntos.append({"x": round(xv, 6), "y": round(k + raiz, 6)})
-        for i in range(num_puntos + 1):
+        for i in range(num_puntos, -1, -1):
             xv = h - r + i * paso
             if xv < h - r - 1e-12 or xv > h + r + 1e-12:
                 continue
@@ -65,7 +65,7 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
                 continue
             yv = k + b * raiz
             puntos.append({"x": round(xv, 6), "y": round(yv, 6)})
-        for i in range(num_puntos + 1):
+        for i in range(num_puntos, -1, -1):
             xv = h - a + i * paso
             diff = (xv - h) / a
             rad = 1.0 - diff * diff
@@ -217,13 +217,24 @@ def generar_puntos_elementos(params):
     return puntos
 
 
+def generar_puntos_ejes(rango=15):
+    return [
+        {"x": -rango, "y": 0, "tipo": "eje", "label": "eje_x"},
+        {"x": rango, "y": 0, "tipo": "eje", "label": "eje_x"},
+        {"x": 0, "y": -rango, "tipo": "eje", "label": "eje_y"},
+        {"x": 0, "y": rango, "tipo": "eje", "label": "eje_y"},
+    ]
+
+
 def crear_datos_grafico(tipo, params):
     """Retorna diccionario con todos los datos para graficar."""
     curva = generar_puntos_conica(params)
     asint_pts = generar_puntos_asintotas(params) if tipo == "Hiperbola" else []
     elementos = generar_puntos_elementos(params)
+    ejes = generar_puntos_ejes()
     return {
         "curva": curva,
         "asintotas": asint_pts,
-        "elementos": elementos
+        "elementos": elementos,
+        "ejes": ejes
     }
