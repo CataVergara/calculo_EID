@@ -24,6 +24,17 @@ def aplicar_reglas_ajuste(A, B, C, D, E, digitos):
     d2 = digitos[-7]
     d1 = digitos[-8] if len(digitos) == 8 else 0
 
+    # REGLA 1: Si d8 es impar → B = -B (hipérbola) - PRIMERO
+    if d8 % 2 != 0:
+        B = -B
+        ajustes.append("Ajuste condicional: d8 es impar. Se reemplaza B por -B para generar una Hiperbola.")
+    
+    # REGLA 2: Si d1 == d2 → B = A (circunferencia) - SEGUNDO
+    if len(digitos) == 8 and d1 == d2:
+        B = A
+        ajustes.append("Ajuste condicional: d1 = d2. Se impone B = A para generar una Circunferencia.")
+    
+    # REGLA 3: Si d5 + d6 es múltiplo de 3 → parábola - TERCERO (ÚLTIMO)
     if (d5 + d6) % 3 == 0:
         if d7 % 2 == 0:
             B = 0.0
@@ -31,12 +42,6 @@ def aplicar_reglas_ajuste(A, B, C, D, E, digitos):
         else:
             A = 0.0
             ajustes.append("Ajuste condicional: d5+d6 es multiplo de 3 y d7 es impar. Se define A = 0 (Parabola de eje horizontal).")
-    elif d8 % 2 != 0:
-        B = -B
-        ajustes.append("Ajuste condicional: d8 es impar. Se reemplaza B por -B para generar una Hiperbola.")
-    elif len(digitos) == 8 and d1 == d2:
-        B = A
-        ajustes.append("Ajuste condicional: d1 = d2. Se impone B = A para generar una Circunferencia.")
 
     return float(A), float(B), float(C), float(D), float(E), ajustes
 
@@ -325,6 +330,9 @@ def generar_texto_elementos(p):
         lines.append(f"- **Centro:** {p.get('centro', 'N/A')}")
         lines.append(f"- **Semieje mayor (a):** {p.get('a_mayor', 'N/A')}")
         lines.append(f"- **Semieje menor (b):** {p.get('b_menor', 'N/A')}")
+        lines.append(f"- **Eje mayor:** {p.get('eje_mayor', 'N/A')}")
+        lines.append(f"- **Longitud eje mayor:** {p.get('long_eje_mayor', 'N/A')}")
+        lines.append(f"- **Longitud eje menor:** {p.get('long_eje_menor', 'N/A')}")
         lines.append(f"- **Distancia focal (c):** {p.get('c', 'N/A')}")
         lines.append(f"- **Focos:** {p.get('focos', 'N/A')}")
         lines.append(f"- **Vertices:** {p.get('vertices', 'N/A')}")
