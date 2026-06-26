@@ -462,7 +462,34 @@ if rut_ingresado.strip() and ejecucion:
         </div>""", unsafe_allow_html=True)
         with st.container(border=True):
             puntos_eje_y = obtener_puntos_grafica(caso_label, digitos, a_critico, rango=2.0, pasos=40)
-            st.line_chart(puntos_eje_y, x="x", y="y", use_container_width=True)
+            if residuo_limite == 0:
+                lim_val = float(a_critico + d1)
+                spec = {
+                    "layer": [
+                        {
+                            "data": {"values": puntos_eje_y},
+                            "mark": {"type": "line", "color": "#1f77b4"},
+                            "encoding": {
+                                "x": {"field": "x", "type": "quantitative", "title": "x"},
+                                "y": {"field": "y", "type": "quantitative", "title": "y"}
+                            }
+                        },
+                        {
+                            "data": {"values": [{"hx": float(a_critico), "hy": lim_val}]},
+                            "mark": {"type": "point", "filled": False, "size": 200,
+                                     "color": "red", "strokeWidth": 2.5},
+                            "encoding": {
+                                "x": {"field": "hx", "type": "quantitative"},
+                                "y": {"field": "hy", "type": "quantitative"}
+                            }
+                        }
+                    ]
+                }
+                st.vega_lite_chart(spec, use_container_width=True)
+                st.caption(f"⚪ El círculo vacío rojo en x = {a_critico} representa el punto no definido (agujero). "
+                           f"El límite vale {lim_val} pero f({a_critico}) no existe en la función original.")
+            else:
+                st.line_chart(puntos_eje_y, x="x", y="y", use_container_width=True)
 
     with tab3:
         st.markdown("""
@@ -598,6 +625,11 @@ if rut_ingresado.strip() and ejecucion:
                     "Existe el limite bilateral:",
                     ["Seleccionar...", "Si existe", "No existe (salto)", "No existe (infinito)"],
                     key="limite_existe"
+                )
+                st.selectbox(
+                    "Conclusión sobre continuidad en x = a:",
+                    ["Seleccionar...", "La función ES continua en x = a", "La función NO es continua en x = a"],
+                    key="conclusion_continuidad"
                 )
             
             with row_b2:
