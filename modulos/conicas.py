@@ -102,6 +102,7 @@ def completar_cuadrados(A, B, C, D, E, tipo):
         p["radio"] = round(r_val, 4)
         p["r_cuad"] = round(r_cuad, 6)
         p["imaginaria"] = r_cuad < 0
+        p["punto"] = abs(r_cuad) < 1e-9
         p["centro"] = (p["h"], p["k"])
         p["focos"] = [(p["h"], p["k"])]
         p["vertices"] = [(p["h"], p["k"])]
@@ -118,6 +119,8 @@ def completar_cuadrados(A, B, C, D, E, tipo):
         b2 = M / B if B != 0 else 1.0
 
         if tipo == "Elipse":
+            p["M"] = round(M, 6)
+            p["imaginaria"] = M <= 0
             p["a_mayor"] = round(abs(a2)**0.5, 4)
             p["b_menor"] = round(abs(b2)**0.5, 4)
             p["a"] = p["a_mayor"]

@@ -49,6 +49,8 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
             puntos.append({"x": round(xv, 6), "y": round(k - raiz, 6)})
 
     elif tipo == "Elipse":
+        if params.get("imaginaria", False):
+            return []
         a = params.get("a", 1.0)
         b = params.get("b", 1.0)
         if a <= 0 or b <= 0:

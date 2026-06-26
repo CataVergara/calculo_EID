@@ -214,6 +214,14 @@ if rut_ingresado.strip() and ejecucion:
                             x="x", y="y", color="serie",
                             use_container_width=True
                         )
+                    elif tipo_curva == "Circunferencia" and params.get("punto", False):
+                        h_v, k_v = params.get("h", 0), params.get("k", 0)
+                        st.info("ℹ️ Circunferencia degenerada: la ecuación representa un único punto.")
+                        st.markdown(
+                            f"> **Explicación matemática:** Al completar cuadrados, el radio² calculado "
+                            f"es $r^2 = 0$. La ecuación tiene exactamente una solución real: "
+                            f"el punto $({h_v},\ {k_v})$."
+                        )
                     elif tipo_curva == "Circunferencia" and params.get("imaginaria", False):
                         r2_val = params.get("r_cuad", 0)
                         h_v, k_v = params.get("h", 0), params.get("k", 0)
@@ -221,10 +229,22 @@ if rut_ingresado.strip() and ejecucion:
                         st.markdown(
                             f"> **Explicación matemática:** Al completar cuadrados, el radio² calculado "
                             f"es $r^2 = {r2_val} < 0$.  \n"
-                            f"> Esto significa que la ecuación $Ax^2 + By^2 + Cx + Dy + E = 0$ "
-                            f"generada por este RUT no tiene solución real en el plano cartesiano.  \n"
-                            f"> El centro sería $({h_v}, {k_v})$ pero no existe ningún punto $(x, y)$ "
-                            f"que satisfaga la ecuación."
+                            f"> Esto significa que la ecuación generada por este RUT no tiene "
+                            f"solución real en el plano cartesiano.  \n"
+                            f"> El centro sería $({h_v},\ {k_v})$ pero no existe ningún punto "
+                            f"$(x, y)$ que satisfaga la ecuación."
+                        )
+                    elif tipo_curva == "Elipse" and params.get("imaginaria", False):
+                        M_val = params.get("M", 0)
+                        h_v, k_v = params.get("h", 0), params.get("k", 0)
+                        st.warning("⚠️ Elipse imaginaria: no existen puntos reales.")
+                        st.markdown(
+                            f"> **Explicación matemática:** Al completar cuadrados se obtiene "
+                            f"$M = {M_val} \\leq 0$.  \n"
+                            f"> Esto implica que $a^2 = M/A < 0$ y $b^2 = M/B < 0$, "
+                            f"por lo que no existen valores reales de $a$ y $b$.  \n"
+                            f"> La ecuación generada por este RUT no representa una elipse real "
+                            f"en el plano cartesiano."
                         )
                     else:
                         st.warning("⚠️ No se pudieron generar puntos para la gráfica.")
