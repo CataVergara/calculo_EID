@@ -396,11 +396,13 @@ if rut_ingresado.strip() and ejecucion:
                 st.markdown("**📌 Análisis de Límites Laterales:**")
                 lim_izq = a_critico + d2
                 lim_der = a_critico + d4
+                fa_salto = a_critico + d4
                 if d2 != d4:
                     st.warning(
                         f"⚠️ Límite izquierdo: $\\lim_{{x \\to {a_critico}^-}} (x + {d2}) = {lim_izq}$\n\n"
                         f"⚠️ Límite derecho: $\\lim_{{x \\to {a_critico}^+}} (x + {d4}) = {lim_der}$\n\n"
                         f"⚠️ Como {lim_izq} ≠ {lim_der}, el límite bilateral **no existe**.\n\n"
+                        f"⚠️ Valor de la función en el punto: $f({a_critico}) = {a_critico} + {d4} = {fa_salto}$ (definida, pero ≠ límite lateral izquierdo).\n\n"
                         f"⚠️ Hay un salto finito de magnitud |{lim_der} - {lim_izq}| = {abs(lim_der - lim_izq)} en x = {a_critico}.\n\n"
                         f"✓ **Clasificación: Discontinuidad de Salto Finito.**"
                     )
@@ -420,7 +422,8 @@ if rut_ingresado.strip() and ejecucion:
                 st.error(
                     f"✗ Cuando x→{a_critico}⁻, el denominador (x - {a_critico}) → 0⁻, por lo que f(x) → -∞.\n\n"
                     f"✗ Cuando x→{a_critico}⁺, el denominador (x - {a_critico}) → 0⁺, por lo que f(x) → +∞.\n\n"
-                    f"✗ Los límites laterales son infinitos y de distinto signo.\n\n"
+                    f"✗ Los límites laterales son infinitos y de distinto signo → el límite **no existe**.\n\n"
+                    f"✗ Valor de la función en el punto: $f({a_critico})$ **no está definida** (denominador = 0 cuando x = {a_critico}).\n\n"
                     f"✗ Existe una **asíntota vertical** en x = {a_critico}. La discontinuidad es **infinita/esencial**."
                 )
 
@@ -459,7 +462,7 @@ if rut_ingresado.strip() and ejecucion:
         </div>""", unsafe_allow_html=True)
         with st.container(border=True):
             puntos_eje_y = obtener_puntos_grafica(caso_label, digitos, a_critico, rango=2.0, pasos=40)
-            st.line_chart(puntos_eje_y, use_container_width=True)
+            st.line_chart(puntos_eje_y, x="x", y="y", use_container_width=True)
 
     with tab3:
         st.markdown("""
