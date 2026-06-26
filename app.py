@@ -104,6 +104,8 @@ if rut_ingresado.strip():
         ejecucion = True
         with col_st:
             st.success(f"✓ RUT Válido | Dígitos: {cuerpo_formateado} | Variable auxiliar: v = {v_aux}")
+            if v_aux == 10:
+                st.markdown("> **Nota:** El dígito verificador K representa v_auxiliar = 10 en los cálculos")
 else:
     with col_st:
         st.info("Sistema listo. Ingrese un identificador de usuario para inicializar los modulos analiticos.")
