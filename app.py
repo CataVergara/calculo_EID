@@ -488,6 +488,51 @@ if rut_ingresado.strip() and ejecucion:
                 st.vega_lite_chart(spec, use_container_width=True)
                 st.caption(f"⚪ El círculo vacío rojo en x = {a_critico} representa el punto no definido (agujero). "
                            f"El límite vale {lim_val} pero f({a_critico}) no existe en la función original.")
+            elif residuo_limite == 1:
+                lim_izq_g = float(a_critico + d2)
+                lim_der_g = float(a_critico + d4)
+                pts_izq = [p for p in puntos_eje_y if p["x"] < a_critico]
+                pts_der = [p for p in puntos_eje_y if p["x"] >= a_critico]
+                spec = {
+                    "layer": [
+                        {
+                            "data": {"values": pts_izq},
+                            "mark": {"type": "line", "color": "#1f77b4"},
+                            "encoding": {
+                                "x": {"field": "x", "type": "quantitative", "title": "x"},
+                                "y": {"field": "y", "type": "quantitative", "title": "y"}
+                            }
+                        },
+                        {
+                            "data": {"values": pts_der},
+                            "mark": {"type": "line", "color": "#1f77b4"},
+                            "encoding": {
+                                "x": {"field": "x", "type": "quantitative"},
+                                "y": {"field": "y", "type": "quantitative"}
+                            }
+                        },
+                        {
+                            "data": {"values": [{"hx": float(a_critico), "hy": lim_izq_g}]},
+                            "mark": {"type": "point", "filled": False, "size": 200,
+                                     "color": "red", "strokeWidth": 2.5},
+                            "encoding": {
+                                "x": {"field": "hx", "type": "quantitative"},
+                                "y": {"field": "hy", "type": "quantitative"}
+                            }
+                        },
+                        {
+                            "data": {"values": [{"hx": float(a_critico), "hy": lim_der_g}]},
+                            "mark": {"type": "point", "filled": True, "size": 150, "color": "red"},
+                            "encoding": {
+                                "x": {"field": "hx", "type": "quantitative"},
+                                "y": {"field": "hy", "type": "quantitative"}
+                            }
+                        }
+                    ]
+                }
+                st.vega_lite_chart(spec, use_container_width=True)
+                st.caption(f"⚪ Círculo vacío en ({a_critico}, {lim_izq_g}): límite por izquierda (no alcanzado).  "
+                           f"🔴 Círculo relleno en ({a_critico}, {lim_der_g}): valor real f({a_critico}).")
             else:
                 st.line_chart(puntos_eje_y, x="x", y="y", use_container_width=True)
 
