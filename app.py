@@ -11,6 +11,12 @@ from modulos.conicas import (
     generar_texto_elementos
 )
 from modulos.graficador import crear_datos_grafico
+from modulos.limites import (
+    identificar_caso_discontinuidad,
+    generar_tabla_aproximacion,
+    generar_puntos_grafica,
+    generar_texto_justificacion
+)
 
 st.set_page_config(
     page_title="MAT1186 - Panel Analitico",
@@ -159,89 +165,33 @@ if rut_ingresado.strip() and ejecucion:
     with tab2:
         st.subheader("Modulo de Analisis Funcional por Tramo")
 
-        residuo_limite = d8 % 3
         a_critico = float(d3)
-
-        if residuo_limite == 0:
+        caso, justificacion_caso = identificar_caso_discontinuidad(d8)
+        if "Removible" in caso:
             caso_nombre = "Caso 1: Discontinuidad Removible"
-            justificacion_caso = f"d8 ({d8}) es multiplo de 3."
-        elif residuo_limite == 1:
+        elif "De Salto" in caso:
             caso_nombre = "Caso 2: Discontinuidad de Salto"
-            justificacion_caso = f"d8 ({d8}) deja residuo 1 al dividirse por 3."
         else:
             caso_nombre = "Caso 3: Discontinuidad Infinita"
-            justificacion_caso = f"d8 ({d8}) deja residuo 2 al dividirse por 3."
 
         st.warning(f"Entorno Activo: {caso_nombre} | Punto Critico de Analisis a = {a_critico}")
         st.caption(f"Justificacion algoritmica de seleccion: {justificacion_caso}")
 
         st.markdown("### Justificacion Algebraica Automatizada")
         with st.container(border=True):
-            if residuo_limite == 0:
-                st.markdown("**Ecuacion asignada (discontinuidad removible):**")
+            texto_just = generar_texto_justificacion(caso, digitos, a_critico)
+            if "Removible" in caso:
                 st.markdown(f"$$ f(x) = \\frac{{(x - {a_critico})(x + {d1})}}{{x - {a_critico}}}, \\quad x \\neq {a_critico} $$")
                 st.markdown("**Procedimiento:**")
-                st.info(
-                    f"1. En x = {a_critico}, el denominador se anula: f({a_critico}) = 0/0 (indeterminacion).\n\n"
-                    f"2. Simplificando algebraicamente: f(x) = x + {d1}, x ≠ {a_critico}.\n\n"
-                    f"3. El limite cuando x→{a_critico} existe y vale {a_critico + d1}, "
-                    f"pero f({a_critico}) no esta definida (agujero).\n\n"
-                    f"4. Por tanto, la discontinuidad es **removible**."
-                )
-            elif residuo_limite == 1:
-                st.markdown("**Ecuacion por tramos asignada:**")
+            elif "De Salto" in caso:
                 st.markdown(f"$$ f(x) = \\begin{{cases}} x + {d2} & \\text{{si }} x < {a_critico} \\\\ x + {d4} & \\text{{si }} x \\ge {a_critico} \\end{{cases}} $$")
                 st.markdown("**Analisis de Limites Laterales:**")
-                st.info(
-                    f"Limite izquierdo: lim_(x→{a_critico}⁻) (x + {d2}) = {a_critico + d2}.\n\n"
-                    f"Limite derecho: lim_(x→{a_critico}⁺) (x + {d4}) = {a_critico + d4}.\n\n"
-                    f"Al ser {a_critico + d2} ≠ {a_critico + d4}, el limite bilateral no existe.\n\n"
-                    f"Se comprueba analiticamente la existencia de un **salto finito** en x = {a_critico}."
-                )
             else:
-                st.markdown("**Ecuacion asignada (discontinuidad infinita):**")
                 st.markdown(f"$$ f(x) = \\frac{{{d5} + 1}}{{x - {a_critico}}}, \\quad x \\neq {a_critico} $$")
                 st.markdown("**Analisis Asintotico:**")
-                st.info(
-                    f"1. Cuando x→{a_critico}⁻, el denominador (x - {a_critico}) → 0⁻, "
-                    f"por lo que f(x) → -∞.\n\n"
-                    f"2. Cuando x→{a_critico}⁺, el denominador (x - {a_critico}) → 0⁺, "
-                    f"por lo que f(x) → +∞.\n\n"
-                    f"3. Los limites laterales son infinitos y de distinto signo.\n\n"
-                    f"4. Existe una **asintota vertical** en x = {a_critico}. "
-                    f"La discontinuidad es **infinita/esencial**."
-                )
+            st.info(texto_just)
 
-        h_izq = [1.0, 0.1, 0.01, 0.001]
-        h_der = [0.001, 0.01, 0.1, 1.0]
-
-        t_izq = []
-        for h in h_izq:
-            x_v = a_critico - h
-            if residuo_limite == 0:
-                if abs(x_v - a_critico) < 1e-12:
-                    y_v = None
-                else:
-                    y_v = (x_v - a_critico) * (x_v + d1) / (x_v - a_critico)
-            elif residuo_limite == 1:
-                y_v = x_v + d2
-            else:
-                y_v = (d5 + 1) / (x_v - a_critico)
-            t_izq.append({"x": round(x_v, 3), "f(x)": round(y_v, 4) if y_v is not None else "No def."})
-
-        t_der = []
-        for h in h_der:
-            x_v = a_critico + h
-            if residuo_limite == 0:
-                if abs(x_v - a_critico) < 1e-12:
-                    y_v = None
-                else:
-                    y_v = (x_v - a_critico) * (x_v + d1) / (x_v - a_critico)
-            elif residuo_limite == 1:
-                y_v = x_v + d4
-            else:
-                y_v = (d5 + 1) / (x_v - a_critico)
-            t_der.append({"x": round(x_v, 3), "f(x)": round(y_v, 4) if y_v is not None else "No def."})
+        t_izq, t_der = generar_tabla_aproximacion(caso, digitos, a_critico)
 
         st.markdown("### Evidencia Numerica Lateral (Contraste)")
         c_t1, c_t2 = st.columns(2, gap="medium")
@@ -256,27 +206,7 @@ if rut_ingresado.strip() and ejecucion:
 
         st.markdown("### Representacion Grafica por Tramos")
         with st.container(border=True):
-            puntos_eje_y = []
-            rango_x = [a_critico + (step / 10.0) for step in range(-20, 21)]
-            for x in rango_x:
-                if abs(x - a_critico) < 1e-12:
-                    puntos_eje_y.append(None)
-                    continue
-                if x < a_critico:
-                    if residuo_limite == 0:
-                        y_val = (x - a_critico) * (x + d1) / (x - a_critico)
-                    elif residuo_limite == 1:
-                        y_val = x + d2
-                    else:
-                        y_val = (d5 + 1) / (x - a_critico)
-                else:
-                    if residuo_limite == 0:
-                        y_val = (x - a_critico) * (x + d1) / (x - a_critico)
-                    elif residuo_limite == 1:
-                        y_val = x + d4
-                    else:
-                        y_val = (d5 + 1) / (x - a_critico)
-                puntos_eje_y.append(y_val if (y_val is not None and abs(y_val) < 150) else None)
+            puntos_eje_y = generar_puntos_grafica(caso, digitos, a_critico, rango=2.0, pasos=40)
             st.line_chart(puntos_eje_y, use_container_width=True)
 
     with tab3:
