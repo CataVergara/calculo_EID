@@ -125,10 +125,16 @@ if rut_ingresado.strip() and ejecucion:
                 st.markdown("#### Proyeccion de la Curva")
                 datos_grafico = crear_datos_grafico(tipo_curva, params)
                 curva = datos_grafico["curva"]
+                ejes = datos_grafico["ejes"]
                 if curva:
-                    pts_x = [p["x"] for p in curva]
-                    pts_y = [p["y"] for p in curva]
-                    st.line_chart({"x": pts_x, "y": pts_y}, x="x", y="y", use_container_width=True)
+                    pts_x = [p["x"] for p in curva] + [p["x"] for p in ejes]
+                    pts_y = [p["y"] for p in curva] + [p["y"] for p in ejes]
+                    pts_s = ["curva"] * len(curva) + [p["label"] for p in ejes]
+                    st.line_chart(
+                        {"x": pts_x, "y": pts_y, "serie": pts_s},
+                        x="x", y="y", color="serie",
+                        use_container_width=True
+                    )
                 else:
                     st.warning("No se pudieron generar puntos para la grafica.")
 
@@ -142,25 +148,26 @@ if rut_ingresado.strip() and ejecucion:
             datos_graf = crear_datos_grafico(tipo_curva, params)
             elementos_pts = datos_graf["elementos"]
             asintotas_pts = datos_graf["asintotas"]
+            ejes = datos_graf["ejes"]
 
+            tx, ty, ts = [], [], []
+            for p in ejes:
+                tx.append(p["x"]); ty.append(p["y"]); ts.append(p["label"])
+            if asintotas_pts:
+                for p in asintotas_pts:
+                    tx.append(p["x"]); ty.append(p["y"]); ts.append("asintota")
             if elementos_pts:
-                st.markdown("**Puntos de interes:**")
-                e_x = [p["x"] for p in elementos_pts]
-                e_y = [p["y"] for p in elementos_pts]
-                e_labels = [p["label"] for p in elementos_pts]
-                st.scatter_chart(
-                    {"x": e_x, "y": e_y, "elemento": e_labels},
-                    x="x", y="y", color="elemento",
+                for p in elementos_pts:
+                    tx.append(p["x"]); ty.append(p["y"]); ts.append(p["label"])
+
+            if tx:
+                st.line_chart(
+                    {"x": tx, "y": ty, "serie": ts},
+                    x="x", y="y", color="serie",
                     use_container_width=True
                 )
-            else:
+            if not elementos_pts:
                 st.info("Datos de elementos geometricos no disponibles.")
-
-            if asintotas_pts:
-                st.markdown("**Asintotas:**")
-                a_x = [p["x"] for p in asintotas_pts]
-                a_y = [p["y"] for p in asintotas_pts]
-                st.line_chart({"x": a_x, "y": a_y}, x="x", y="y", use_container_width=True)
 
     with tab2:
         st.subheader("Modulo de Analisis Funcional por Tramo")
