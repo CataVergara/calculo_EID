@@ -46,6 +46,46 @@ def aplicar_reglas_ajuste(A, B, C, D, E, digitos):
     return float(A), float(B), float(C), float(D), float(E), ajustes
 
 
+def aplicar_reglas_individualmente(A, B, C, D, E, digitos):
+    """
+    Aplica cada regla de ajuste INDEPENDIENTEMENTE sobre los coeficientes base.
+    Retorna una lista de (A, B, C, D, E, descripcion) para cada regla que se cumple.
+    """
+    resultados = []
+    d8 = digitos[-1]
+    d7 = digitos[-2]
+    d6 = digitos[-3]
+    d5 = digitos[-4]
+    d2 = digitos[-7]
+    d1 = digitos[-8] if len(digitos) == 8 else 0
+
+    if d8 % 2 != 0:
+        resultados.append((
+            float(A), float(-B), float(C), float(D), float(E),
+            "d8 es impar. Se reemplaza B por -B para generar una Hipérbola."
+        ))
+
+    if len(digitos) == 8 and d1 == d2:
+        resultados.append((
+            float(A), float(A), float(C), float(D), float(E),
+            "d1 = d2. Se impone B = A para generar una Circunferencia."
+        ))
+
+    if (d5 + d6) % 3 == 0:
+        if d7 % 2 == 0:
+            resultados.append((
+                float(A), 0.0, float(C), float(D), float(E),
+                "d5+d6 es múltiplo de 3 y d7 es par. Se define B = 0 (Parábola de eje vertical)."
+            ))
+        else:
+            resultados.append((
+                0.0, float(B), float(C), float(D), float(E),
+                "d5+d6 es múltiplo de 3 y d7 es impar. Se define A = 0 (Parábola de eje horizontal)."
+            ))
+
+    return resultados
+
+
 def clasificar_conica(A, B):
     if abs(A) < 1e-9 or abs(B) < 1e-9:
         return "Parabola"

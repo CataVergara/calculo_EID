@@ -4,6 +4,7 @@ from modulos.validador_rut import validar_y_procesar_rut
 from modulos.conicas import (
     generar_coeficientes,
     aplicar_reglas_ajuste,
+    aplicar_reglas_individualmente,
     clasificar_conica,
     completar_cuadrados,
     generar_desglose_algebraico,
@@ -171,10 +172,50 @@ if rut_ingresado.strip() and ejecucion:
             with st.expander("OK Ver sumatoria manual del Módulo 11", expanded=False):
                 st.code(texto_pasos_rut, language="text")
 
-            if lista_ajustes:
-                st.markdown("### Criterios de Consistencia Aplicados")
-                for idx, aj in enumerate(lista_ajustes, 1):
-                    st.success(f"**Regla {idx}:** {aj}")
+            resultados_individuales = aplicar_reglas_individualmente(A_base, B_base, C_base, D_base, E_base, digitos)
+
+            if resultados_individuales:
+                st.markdown("### Resultados por Criterio de Consistencia")
+                for idx, (A_r, B_r, C_r, D_r, E_r, desc) in enumerate(resultados_individuales, 1):
+                    tipo_r = clasificar_conica(A_r, B_r)
+                    color_r = colores.get(tipo_r, "#607D8B")
+                    with st.container(border=True):
+                        cols = st.columns([3, 1])
+                        with cols[0]:
+                            st.markdown(f"**Resultado {idx}:** {desc}")
+                        with cols[1]:
+                            st.markdown(
+                                f'<div style="text-align:right;">'
+                                f'<span style="display:inline-block; background:{color_r}; color:white; '
+                                f'padding:4px 14px; border-radius:15px; font-weight:600; font-size:0.85rem;">'
+                                f'{tipo_r}</span></div>',
+                                unsafe_allow_html=True
+                            )
+
+                        c1, c2, c3, c4, c5 = st.columns(5)
+                        c1.metric("A (x²)", round(A_r, 4))
+                        c2.metric("B (y²)", round(B_r, 4))
+                        c3.metric("C (x)", round(C_r, 4))
+                        c4.metric("D (y)", round(D_r, 4))
+                        c5.metric("E", round(E_r, 4))
+
+                        with st.expander("Ver desarrollo algebraico, gráfico y elementos geométricos"):
+                            try:
+                                params_r = completar_cuadrados(A_r, B_r, C_r, D_r, E_r, tipo_r)
+                                desglose_r = generar_desglose_algebraico(A_r, B_r, C_r, D_r, E_r, tipo_r, params_r)
+                                st.markdown(desglose_r)
+
+                                datos_r = crear_datos_grafico(tipo_r, params_r)
+                                curva_r = datos_r["curva"]
+                                if curva_r:
+                                    pts_x = [p["x"] for p in curva_r]
+                                    pts_y = [p["y"] for p in curva_r]
+                                    st.line_chart({"x": pts_x, "y": pts_y}, x="x", y="y", use_container_width=True)
+
+                                st.markdown("**Elementos Geométricos:**")
+                                st.markdown(generar_texto_elementos(params_r))
+                            except Exception as err:
+                                st.warning(f"No se pudo generar el desarrollo completo: {err}")
 
         st.markdown("")
         st.divider()
@@ -259,7 +300,7 @@ if rut_ingresado.strip() and ejecucion:
         st.markdown("""
         <div style="background:linear-gradient(135deg, #f0e8f8 0%, #f8f0f6 100%);
                     padding:16px 20px; border-radius:12px; margin-bottom:16px;">
-        <h3 style="margin:0; color:#4a235a;">📍 Fase 3: Elementos Geométricos de la Cónica</h3>
+        <h3 style="margin:0; color:#4a235a;">Fase 3: Elementos Geométricos de la Cónica</h3>
         </div>""", unsafe_allow_html=True)
 
         with st.container(border=True):
@@ -458,7 +499,7 @@ if rut_ingresado.strip() and ejecucion:
         st.markdown("""
         <div style="background:linear-gradient(135deg, #f8e8e8 0%, #f8f0f0 100%);
                     padding:16px 20px; border-radius:12px; margin-bottom:16px;">
-        <h3 style="margin:0; color:#b71c1c;">📉 Fase 3: Representación Gráfica por Tramos</h3>
+        <h3 style="margin:0; color:#b71c1c;">Fase 3: Representación Gráfica por Tramos</h3>
         </div>""", unsafe_allow_html=True)
         with st.container(border=True):
             puntos_eje_y = obtener_puntos_grafica(caso_label, digitos, a_critico, rango=2.0, pasos=40)
