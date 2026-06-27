@@ -7,8 +7,7 @@ from modulos.conicas import (
     aplicar_reglas_individualmente,
     clasificar_conica,
     completar_cuadrados,
-    generar_desglose_algebraico,
-    generar_texto_elementos
+    generar_desglose_algebraico
 )
 from modulos.graficador import crear_datos_grafico
 from modulos.limites import (
@@ -217,8 +216,6 @@ if rut_ingresado.strip() and ejecucion:
                                         use_container_width=True
                                     )
 
-                                st.markdown("**Elementos Geométricos:**")
-                                st.markdown(generar_texto_elementos(params_r))
                             except Exception as err:
                                 st.warning(f"No se pudo generar el desarrollo completo: {err}")
 
