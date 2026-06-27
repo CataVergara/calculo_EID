@@ -1,24 +1,13 @@
 # -*- coding: utf-8 -*-
 
-def _raiz(x):
-    if x < 0:
-        return None
-    if x == 0:
-        return 0.0
-    r = x / 2.0
-    for _ in range(30):
-        nr = (r + x / r) / 2.0
-        if abs(nr - r) < 1e-14:
-            return nr
-        r = nr
-    return r
+from modulos.utilidades import raiz_cuadrada
 
 
-def generar_puntos_conica(params, num_puntos=400, rango=15):
+def generar_puntos_conica(params: dict, num_puntos: int = 400, rango: float = 15) -> list[dict]:
     tipo = params.get("tipo", "")
     h = params.get("h", 0.0)
     k = params.get("k", 0.0)
-    puntos = []
+    puntos: list[dict] = []
 
     if tipo == "Circunferencia":
         r = params.get("radio", 1.0)
@@ -32,7 +21,7 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
             rad = r**2 - (xv - h)**2
             if rad < 0:
                 continue
-            raiz = _raiz(rad)
+            raiz = raiz_cuadrada(rad)
             if raiz is None:
                 continue
             puntos.append({"x": round(xv, 6), "y": round(k + raiz, 6)})
@@ -43,7 +32,7 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
             rad = r**2 - (xv - h)**2
             if rad < 0:
                 continue
-            raiz = _raiz(rad)
+            raiz = raiz_cuadrada(rad)
             if raiz is None:
                 continue
             puntos.append({"x": round(xv, 6), "y": round(k - raiz, 6)})
@@ -62,7 +51,7 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
             rad = 1.0 - diff * diff
             if rad < 0:
                 continue
-            raiz = _raiz(rad)
+            raiz = raiz_cuadrada(rad)
             if raiz is None:
                 continue
             yv = k + b * raiz
@@ -73,7 +62,7 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
             rad = 1.0 - diff * diff
             if rad < 0:
                 continue
-            raiz = _raiz(rad)
+            raiz = raiz_cuadrada(rad)
             if raiz is None:
                 continue
             yv = k - b * raiz
@@ -87,7 +76,7 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
             return []
         if orientacion == "horizontal":
             for signo in [1, -1]:
-                pts_rama = []
+                pts_rama: list[dict] = []
                 for i in range(num_puntos // 2 + 1):
                     t = (i / (num_puntos // 2)) * rango + 0.01
                     xv = h + signo * a * (1.0 + t)
@@ -95,12 +84,12 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
                     rad = diff * diff - 1.0
                     if rad < 0:
                         continue
-                    raiz = _raiz(rad)
+                    raiz = raiz_cuadrada(rad)
                     if raiz is None:
                         continue
                     pts_rama.append({"x": round(xv, 6), "y": round(k + b * raiz, 6)})
                 puntos.extend(pts_rama)
-                pts_inf = []
+                pts_inf: list[dict] = []
                 for i in range(num_puntos // 2 + 1):
                     t = (i / (num_puntos // 2)) * rango + 0.01
                     xv = h + signo * a * (1.0 + t)
@@ -108,7 +97,7 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
                     rad = diff * diff - 1.0
                     if rad < 0:
                         continue
-                    raiz = _raiz(rad)
+                    raiz = raiz_cuadrada(rad)
                     if raiz is None:
                         continue
                     pts_inf.append({"x": round(xv, 6), "y": round(k - b * raiz, 6)})
@@ -123,7 +112,7 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
                     rad = diff * diff - 1.0
                     if rad < 0:
                         continue
-                    raiz = _raiz(rad)
+                    raiz = raiz_cuadrada(rad)
                     if raiz is None:
                         continue
                     pts_rama.append({"x": round(h + b * raiz, 6), "y": round(yv, 6)})
@@ -136,7 +125,7 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
                     rad = diff * diff - 1.0
                     if rad < 0:
                         continue
-                    raiz = _raiz(rad)
+                    raiz = raiz_cuadrada(rad)
                     if raiz is None:
                         continue
                     pts_inf.append({"x": round(h - b * raiz, 6), "y": round(yv, 6)})
@@ -146,7 +135,6 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
         pv = params.get("p", 1.0)
         eje = params.get("eje", "vertical")
         if abs(pv) < 1e-12:
-            # Parabola degenerada: D=0 o C=0 → dibujar linea vertical x=h o horizontal y=k
             h_d = params.get("h", 0.0)
             k_d = params.get("k", 0.0)
             if eje == "vertical":
@@ -176,29 +164,22 @@ def generar_puntos_conica(params, num_puntos=400, rango=15):
     return puntos
 
 
-def generar_puntos_asintotas(params, num_puntos=50, rango=15):
-    puntos = []
+def generar_puntos_asintotas(params: dict, num_puntos: int = 50, rango: float = 15) -> list[dict]:
+    puntos: list[dict] = []
     asintotas = params.get("asintotas", [])
     h = params.get("h", 0.0)
     for m, intercepto in asintotas:
-        pts = []
         for i in range(num_puntos + 1):
             xv = h - rango / 2.0 + (i / num_puntos) * rango
             yv = m * xv + intercepto
             if abs(yv) > 100:
                 continue
-            pts.append({"x": round(xv, 6), "y": round(yv, 6), "tipo": "asintota"})
-        puntos.extend(pts)
+            puntos.append({"x": round(xv, 6), "y": round(yv, 6), "tipo": "asintota"})
     return puntos
 
 
-def generar_puntos_elementos(params):
-    puntos = []
-    etiquetas = {
-        "centro": {"color": "red", "size": 120},
-        "foco": {"color": "green", "size": 100},
-        "vertice": {"color": "orange", "size": 80}
-    }
+def generar_puntos_elementos(params: dict) -> list[dict]:
+    puntos: list[dict] = []
 
     centro = params.get("centro")
     if centro:
@@ -230,7 +211,7 @@ def generar_puntos_elementos(params):
     return puntos
 
 
-def generar_puntos_ejes(rango=15):
+def generar_puntos_ejes(rango: float = 15) -> list[dict]:
     return [
         {"x": -rango, "y": 0, "tipo": "eje", "label": "eje_x"},
         {"x": rango, "y": 0, "tipo": "eje", "label": "eje_x"},
@@ -239,8 +220,7 @@ def generar_puntos_ejes(rango=15):
     ]
 
 
-def crear_datos_grafico(tipo, params):
-    """Retorna diccionario con todos los datos para graficar."""
+def crear_datos_grafico(tipo: str, params: dict) -> dict:
     curva = generar_puntos_conica(params)
     asint_pts = generar_puntos_asintotas(params) if tipo == "Hiperbola" else []
     elementos = generar_puntos_elementos(params)

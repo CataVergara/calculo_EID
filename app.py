@@ -13,8 +13,7 @@ from modulos.conicas import (
 from modulos.graficador import crear_datos_grafico
 from modulos.limites import (
     obtener_tabla_aproximacion,
-    obtener_puntos_grafica,
-    obtener_texto_justificacion
+    obtener_puntos_grafica
 )
 
 st.set_page_config(
@@ -207,10 +206,16 @@ if rut_ingresado.strip() and ejecucion:
 
                                 datos_r = crear_datos_grafico(tipo_r, params_r)
                                 curva_r = datos_r["curva"]
+                                ejes_r = datos_r.get("ejes", [])
                                 if curva_r:
-                                    pts_x = [p["x"] for p in curva_r]
-                                    pts_y = [p["y"] for p in curva_r]
-                                    st.line_chart({"x": pts_x, "y": pts_y}, x="x", y="y", use_container_width=True)
+                                    pts_x = [p["x"] for p in curva_r] + [p["x"] for p in ejes_r]
+                                    pts_y = [p["y"] for p in curva_r] + [p["y"] for p in ejes_r]
+                                    pts_s = ["curva"] * len(curva_r) + [p["label"] for p in ejes_r]
+                                    st.line_chart(
+                                        {"x": pts_x, "y": pts_y, "serie": pts_s},
+                                        x="x", y="y", color="serie",
+                                        use_container_width=True
+                                    )
 
                                 st.markdown("**Elementos Geométricos:**")
                                 st.markdown(generar_texto_elementos(params_r))
@@ -385,7 +390,6 @@ if rut_ingresado.strip() and ejecucion:
         a_critico = float(d3)
         caso_label = ["Removible", "De Salto", "Infinita"][residuo_limite]
 
-        iconos_caso = {0: "", 1: "", 2: ""}
         if residuo_limite == 0:
             caso_nombre = "Discontinuidad Removible (Caso 1)"
         elif residuo_limite == 1:
