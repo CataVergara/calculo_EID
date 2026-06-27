@@ -1,7 +1,7 @@
 # Sistema de Análisis Matemático Modular — MAT1186
 
 **Asignatura:** Introducción al Cálculo  
-**Evaluación:** EID N°1 — Análisis de Cónicas y Límites  
+**Evaluación:** EID N°1 
 **Carrera:** Ingeniería Civil en Informática  
 **Departamento:** Departamento de Ingeniería Civil en Informática  
 **Universidad:** Universidad Católica de Temuco
@@ -44,27 +44,9 @@ calculo_EID/
 
 ```bash
 pip install streamlit
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
 ## Restricciones Técnicas
 
 - **Sin numpy, math, sympy, scipy ni pandas.** Todos los cálculos (incluyendo raíz cuadrada por Newton-Raphson) están implementados manualmente en Python puro.
-
-## Criterios de Evaluación (EID N°1)
-
-| Dimensión | Puntaje |
-|---|---|
-| I: Validación del RUT y modelo matemático | 6 pts |
-| II: Análisis de cónicas, forma canónica y gráficos | 12 pts |
-| III: Funciones por tramos, límites y discontinuidades | 10 pts |
-| IV: Calidad técnica, interfaz modular, UX e innovación visual | 12 pts |
-| V: GitHub, trabajo colaborativo, líder y código de ética | 5 pts |
-| VI: Defensa oral del proyecto | 35 pts |
-| VII: Evaluación matemática complementaria en la defensa | 20 pts |
-| **Total** | **100 pts** |
-| Bono: Código de ética y avance >50% al 29 de mayo | +5 pts |
-
-## Contribución
-
-Proyecto desarrollado para la Evaluación Integrada de Desempeño N°1 de MAT1186.

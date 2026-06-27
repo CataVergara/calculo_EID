@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 
+# Se creo archivo para tener funciones de utilidad que se puedan usar en varios modulos
 
 def raiz_cuadrada(x: float) -> float | None:
     if x < 0:
