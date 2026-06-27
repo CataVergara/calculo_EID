@@ -3,15 +3,15 @@
 def validar_y_procesar_rut(rut_completo):
     letras_invalidas = set(c.upper() for c in rut_completo if c.isalpha() and c.upper() != 'K')
     if letras_invalidas:
-        return False, [], 0, f"❌ Letras no permitidas: {', '.join(letras_invalidas)}. Solo se acepta K como dígito verificador."
+        return False, [], 0, f"Error: Letras no permitidas: {', '.join(letras_invalidas)}. Solo se acepta K como dígito verificador."
 
     rut_limpio = "".join(c for c in rut_completo if c.isalnum()).upper()
 
     # Acepta cuerpo sin DV (7 u 8 dígitos) y calcula DV automáticamente.
     if len(rut_limpio) < 7:
-        return False, [], 0, f"❌ RUT demasiado corto. Ingrese al menos 7 dígitos de cuerpo. Ingresado: {rut_completo}"
+        return False, [], 0, f"Error: RUT demasiado corto. Ingrese al menos 7 dígitos de cuerpo. Ingresado: {rut_completo}"
     if len(rut_limpio) > 9:
-        return False, [], 0, f"❌ RUT demasiado largo. Máximo 9 caracteres. Ingresado: {rut_completo}"
+        return False, [], 0, f"Error: RUT demasiado largo. Máximo 9 caracteres. Ingresado: {rut_completo}"
 
     if rut_limpio.isdigit() and len(rut_limpio) in (7, 8):
         cuerpo = rut_limpio
@@ -23,10 +23,10 @@ def validar_y_procesar_rut(rut_completo):
         dv_autocalculado = False
 
     if not cuerpo.isdigit():
-        return False, [], 0, f"❌ El cuerpo del RUT debe contener solo números. Ingresado: {cuerpo}"
+        return False, [], 0, f"Error: El cuerpo del RUT debe contener solo números. Ingresado: {cuerpo}"
 
     if dv_ingresado is not None and not (dv_ingresado.isdigit() or dv_ingresado == "K"):
-        return False, [], 0, f"❌ Dígito verificador inválido. Debe ser número (0-9) o K. Ingresado: {dv_ingresado}"
+        return False, [], 0, f"Error: Dígito verificador inválido. Debe ser número (0-9) o K. Ingresado: {dv_ingresado}"
 
     suma = 0
     multiplicador = 2
@@ -48,7 +48,7 @@ def validar_y_procesar_rut(rut_completo):
 
     if not dv_autocalculado and dv_ingresado != dv_esperado:
         return False, [], 0, (
-            f"❌ Dígito verificador incorrecto.\n"
+            f"Error: Dígito verificador incorrecto.\n"
             f"   Esperado: {dv_esperado}\n"
             f"   Ingresado: {dv_ingresado}"
         )
@@ -63,9 +63,9 @@ def validar_y_procesar_rut(rut_completo):
 
     if dv_autocalculado:
         texto_pasos += f"\n• DV ingresado: (no ingresado)"
-        texto_pasos += f"\n• Resultado: DV autocalculado = '{dv_esperado}' ✓ Válido"
+        texto_pasos += f"\n• Resultado: DV autocalculado = '{dv_esperado}' OK Válido"
     else:
-        texto_pasos += f"\n• Resultado: DV = '{dv_esperado}' ✓ Válido"
+        texto_pasos += f"\n• Resultado: DV = '{dv_esperado}' OK Válido"
 
     lista_digitos = [int(d) for d in cuerpo]
 

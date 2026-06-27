@@ -18,7 +18,7 @@ from modulos.limites import (
 
 st.set_page_config(
     page_title="MAT1186 - Análisis de Cónicas",
-    page_icon="📐",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -64,7 +64,7 @@ st.markdown("""
 st.markdown("""
 <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);
             color: white; padding: 22px 30px; border-radius: 14px; margin-bottom: 18px;">
-    <h2 style="margin:0; font-size:1.6rem; letter-spacing:0.5px;">📐 Sistema de Análisis Matemático Modular</h2>
+    <h2 style="margin:0; font-size:1.6rem; letter-spacing:0.5px;"> Sistema de Análisis Matemático Modular</h2>
     <p style="margin:6px 0 0 0; opacity:0.85; font-size:0.9rem;">
         Evaluación Integrada de Desempeño N°1 &nbsp;·&nbsp;
         MAT1186 Introducción al Cálculo &nbsp;·&nbsp;
@@ -73,7 +73,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("### 🔑 Ingreso de RUT")
+st.markdown("###  Ingreso de RUT")
 col_in, col_st = st.columns([2, 2], gap="large")
 
 with col_in:
@@ -88,7 +88,7 @@ texto_pasos_rut = ""
 rut_sanitizado = "".join(c.upper() for c in rut_ingresado if c.isdigit() or c.upper() == 'K' or c == '-')
 if rut_sanitizado != rut_ingresado and rut_ingresado.strip():
     with col_st:
-        st.warning("⚠️ Se permiten solo números, K y guión (-)")
+        st.warning("Atención: Se permiten solo números, K y guión (-)")
     rut_ingresado = rut_sanitizado
 
 if rut_ingresado.strip():
@@ -103,7 +103,7 @@ if rut_ingresado.strip():
         digitos = [int(d) for d in cuerpo_formateado]
         ejecucion = True
         with col_st:
-            st.success(f"✓ RUT Válido | Dígitos: {cuerpo_formateado} | Variable auxiliar: v = {v_aux}")
+            st.success(f"OK RUT Válido | Dígitos: {cuerpo_formateado} | Variable auxiliar: v = {v_aux}")
             if v_aux == 10:
                 st.markdown("> **Nota:** El dígito verificador K representa v_auxiliar = 10 en los cálculos")
 else:
@@ -114,9 +114,9 @@ st.markdown("---")
 
 if rut_ingresado.strip() and ejecucion:
     tab1, tab2, tab3 = st.tabs([
-        "📊 Secciones Cónicas",
-        "📈 Límites y Continuidad",
-        "🛡️ Validación de Competencias"
+        " Secciones Cónicas",
+        " Límites y Continuidad",
+        " Validación de Competencias"
     ])
 
     d1, d2, d3, d4, d5, d6, d7, d8 = digitos
@@ -125,7 +125,7 @@ if rut_ingresado.strip() and ejecucion:
         st.markdown("""
         <div style="background:linear-gradient(135deg, #e8f4f8 0%, #f0f8ee 100%);
                     padding:16px 20px; border-radius:12px; margin-bottom:16px;">
-        <h3 style="margin:0; color:#1e3a5f;">📐 Fase 1: Modelamiento de la Sección Cónica</h3>
+        <h3 style="margin:0; color:#1e3a5f;"> Fase 1: Modelamiento de la Sección Cónica</h3>
         </div>""", unsafe_allow_html=True)
 
         A_base, B_base, C_base, D_base, E_base, F_base = generar_coeficientes(digitos, v_aux)
@@ -152,7 +152,7 @@ if rut_ingresado.strip() and ejecucion:
             
             st.divider()
             
-            with st.expander("📋 Ver construcción paso a paso de coeficientes"):
+            with st.expander(" Ver construcción paso a paso de coeficientes"):
                 st.markdown(
                     f"**Fórmulas aplicadas (Fase 1):**\n\n"
                     f"- $A = \\frac{{d_1 + d_2}}{{v}} = \\frac{{{d1} + {d2}}}{{{v_aux}}} = {round(A_base, 6)}$\n\n"
@@ -168,7 +168,7 @@ if rut_ingresado.strip() and ejecucion:
         
         with st.container(border=True):
             st.markdown("### Validación de Credenciales (Módulo 11)")
-            with st.expander("✓ Ver sumatoria manual del Módulo 11", expanded=False):
+            with st.expander("OK Ver sumatoria manual del Módulo 11", expanded=False):
                 st.code(texto_pasos_rut, language="text")
 
             if lista_ajustes:
@@ -183,7 +183,7 @@ if rut_ingresado.strip() and ejecucion:
         st.markdown("""
         <div style="background:linear-gradient(135deg, #f0f2e8 0%, #f8f6f0 100%);
                     padding:16px 20px; border-radius:12px; margin-bottom:16px;">
-        <h3 style="margin:0; color:#5d4e37;">🔢 Fase 2: Desarrollo Algebraico (General → Canónica)</h3>
+        <h3 style="margin:0; color:#5d4e37;"> Fase 2: Desarrollo Algebraico (General → Canónica)</h3>
         </div>""", unsafe_allow_html=True)
 
         col_des, col_gr = st.columns([3, 2], gap="large")
@@ -195,12 +195,12 @@ if rut_ingresado.strip() and ejecucion:
                     desglose = generar_desglose_algebraico(A, B, C, D, E, tipo_curva, params)
                     st.markdown(desglose)
                 except Exception as err:
-                    st.error(f"❌ Error al calcular forma canónica: {err}")
+                    st.error(f"Error: Error al calcular forma canónica: {err}")
                     params = {"tipo": tipo_curva}
 
         with col_gr:
             with st.container(border=True):
-                st.markdown("#### 📈 Gráfico de la Curva")
+                st.markdown("####  Gráfico de la Curva")
                 try:
                     datos_grafico = crear_datos_grafico(tipo_curva, params)
                     curva = datos_grafico["curva"]
@@ -216,7 +216,7 @@ if rut_ingresado.strip() and ejecucion:
                         )
                     elif tipo_curva == "Circunferencia" and params.get("punto", False):
                         h_v, k_v = params.get("h", 0), params.get("k", 0)
-                        st.info("ℹ️ Circunferencia degenerada: la ecuación representa un único punto.")
+                        st.info("Info: Circunferencia degenerada: la ecuación representa un único punto.")
                         st.markdown(
                             f"> **Explicación matemática:** Al completar cuadrados, el radio² calculado "
                             f"es $r^2 = 0$. La ecuación tiene exactamente una solución real: "
@@ -225,7 +225,7 @@ if rut_ingresado.strip() and ejecucion:
                     elif tipo_curva == "Circunferencia" and params.get("imaginaria", False):
                         r2_val = params.get("r_cuad", 0)
                         h_v, k_v = params.get("h", 0), params.get("k", 0)
-                        st.warning("⚠️ Circunferencia imaginaria: no existen puntos reales.")
+                        st.warning("Atención: Circunferencia imaginaria: no existen puntos reales.")
                         st.markdown(
                             f"> **Explicación matemática:** Al completar cuadrados, el radio² calculado "
                             f"es $r^2 = {r2_val} < 0$.  \n"
@@ -237,7 +237,7 @@ if rut_ingresado.strip() and ejecucion:
                     elif tipo_curva == "Elipse" and params.get("imaginaria", False):
                         M_val = params.get("M", 0)
                         h_v, k_v = params.get("h", 0), params.get("k", 0)
-                        st.warning("⚠️ Elipse imaginaria: no existen puntos reales.")
+                        st.warning("Atención: Elipse imaginaria: no existen puntos reales.")
                         st.markdown(
                             f"> **Explicación matemática:** Al completar cuadrados se obtiene "
                             f"$M = {M_val} \\leq 0$.  \n"
@@ -247,9 +247,9 @@ if rut_ingresado.strip() and ejecucion:
                             f"en el plano cartesiano."
                         )
                     else:
-                        st.warning("⚠️ No se pudieron generar puntos para la gráfica.")
+                        st.warning("Atención: No se pudieron generar puntos para la gráfica.")
                 except Exception as err:
-                    st.error(f"❌ Error al graficar: {err}")
+                    st.error(f"Error: Error al graficar: {err}")
                     datos_grafico = {"curva": [], "asintotas": [], "elementos": []}
 
         st.markdown("")
@@ -304,7 +304,7 @@ if rut_ingresado.strip() and ejecucion:
         st.markdown("""
         <div style="background:linear-gradient(135deg, #e8f8f0 0%, #f0f8f6 100%);
                     padding:16px 20px; border-radius:12px; margin-bottom:16px;">
-        <h3 style="margin:0; color:#1b5e20;">🗺️ Fase 4: Representación Visual de Elementos</h3>
+        <h3 style="margin:0; color:#1b5e20;"> Fase 4: Representación Visual de Elementos</h3>
         </div>""", unsafe_allow_html=True)
 
         with st.container(border=True):
@@ -312,7 +312,7 @@ if rut_ingresado.strip() and ejecucion:
             asintotas_pts = datos_grafico["asintotas"]
 
             if elementos_pts:
-                st.markdown("**🎯 Puntos de Interés:**")
+                st.markdown("** Puntos de Interés:**")
                 e_x = [p["x"] for p in elementos_pts]
                 e_y = [p["y"] for p in elementos_pts]
                 e_labels = [p["label"] for p in elementos_pts]
@@ -322,29 +322,29 @@ if rut_ingresado.strip() and ejecucion:
                     use_container_width=True
                 )
             else:
-                st.info("ℹ️ Datos de elementos geométricos no disponibles.")
+                st.info("Info: Datos de elementos geométricos no disponibles.")
 
             if asintotas_pts or tipo_curva == "Hiperbola":
-                st.markdown("**➡️ Asíntotas Lineales Proyectadas:**")
+                st.markdown("** Asíntotas Lineales Proyectadas:**")
                 if asintotas_pts:
                     a_x = [p["x"] for p in asintotas_pts]
                     a_y = [p["y"] for p in asintotas_pts]
                     st.line_chart({"x": a_x, "y": a_y}, x="x", y="y", use_container_width=True)
                 else:
-                    st.info("ℹ️ Calculando pendientes límites para las asíntotas de la hipérbola.")
+                    st.info("Info: Calculando pendientes límites para las asíntotas de la hipérbola.")
 
     with tab2:
         st.markdown("""
         <div style="background:linear-gradient(135deg, #e8f4f8 0%, #f0f8ee 100%);
                     padding:16px 20px; border-radius:12px; margin-bottom:16px;">
-        <h3 style="margin:0; color:#1e3a5f;">📈 Módulo de Análisis Funcional por Tramo</h3>
+        <h3 style="margin:0; color:#1e3a5f;"> Módulo de Análisis Funcional por Tramo</h3>
         </div>""", unsafe_allow_html=True)
 
         residuo_limite = d8 % 3
         a_critico = float(d3)
         caso_label = ["Removible", "De Salto", "Infinita"][residuo_limite]
 
-        iconos_caso = {0: "🕳️", 1: "↕️", 2: "♾️"}
+        iconos_caso = {0: "", 1: "", 2: ""}
         if residuo_limite == 0:
             caso_nombre = "Discontinuidad Removible (Caso 1)"
         elif residuo_limite == 1:
@@ -367,14 +367,14 @@ if rut_ingresado.strip() and ejecucion:
         st.markdown("""
         <div style="background:linear-gradient(135deg, #f0e8f8 0%, #f8f0f6 100%);
                     padding:16px 20px; border-radius:12px; margin-bottom:16px;">
-        <h3 style="margin:0; color:#4a235a;">🧮 Fase 1: Justificación Algebraica Automatizada</h3>
+        <h3 style="margin:0; color:#4a235a;"> Fase 1: Justificación Algebraica Automatizada</h3>
         </div>""", unsafe_allow_html=True)
         
         with st.container(border=True):
             if residuo_limite == 0:
-                st.markdown("**📋 Ecuación asignada (discontinuidad removible):**")
+                st.markdown("** Ecuación asignada (discontinuidad removible):**")
                 st.markdown(f"$$ f(x) = \\frac{{(x - {a_critico})(x + {d1})}}{{x - {a_critico}}}, \\quad x \\neq {a_critico} $$")
-                st.markdown("**📌 Procedimiento paso a paso:**")
+                st.markdown("** Procedimiento paso a paso:**")
                 st.markdown(
                     f"**Paso 1.** Identificar la indeterminación: al evaluar $x = {a_critico}$, el numerador y denominador se anulan simultáneamente:"
                 )
@@ -386,45 +386,45 @@ if rut_ingresado.strip() and ejecucion:
                 st.markdown(f"**Paso 3.** Calcular el límite y verificar continuidad en $x = {a_critico}$:")
                 st.markdown(f"$$ \\lim_{{x \\to {a_critico}}} f(x) = {a_critico} + {d1} = {a_critico + d1} $$")
                 st.success(
-                    f"✓ El límite existe y vale {a_critico + d1}.\n\n"
-                    f"✓ Sin embargo, f({a_critico}) no está definida en la función original (agujero en la gráfica).\n\n"
-                    f"✓ Como el límite existe pero f(a) no está definida → **Discontinuidad Removible**."
+                    f"OK El límite existe y vale {a_critico + d1}.\n\n"
+                    f"OK Sin embargo, f({a_critico}) no está definida en la función original (agujero en la gráfica).\n\n"
+                    f"OK Como el límite existe pero f(a) no está definida → **Discontinuidad Removible**."
                 )
             elif residuo_limite == 1:
-                st.markdown("**📋 Ecuación por tramos asignada:**")
+                st.markdown("** Ecuación por tramos asignada:**")
                 st.markdown(f"$$ f(x) = \\begin{{cases}} x + {d2} & \\text{{si }} x < {a_critico} \\\\ x + {d4} & \\text{{si }} x \\ge {a_critico} \\end{{cases}} $$")
-                st.markdown("**📌 Análisis de Límites Laterales:**")
+                st.markdown("** Análisis de Límites Laterales:**")
                 lim_izq = a_critico + d2
                 lim_der = a_critico + d4
                 fa_salto = a_critico + d4
                 if d2 != d4:
                     st.warning(
-                        f"⚠️ Límite izquierdo: $\\lim_{{x \\to {a_critico}^-}} (x + {d2}) = {lim_izq}$\n\n"
-                        f"⚠️ Límite derecho: $\\lim_{{x \\to {a_critico}^+}} (x + {d4}) = {lim_der}$\n\n"
-                        f"⚠️ Como {lim_izq} ≠ {lim_der}, el límite bilateral **no existe**.\n\n"
-                        f"⚠️ Valor de la función en el punto: $f({a_critico}) = {a_critico} + {d4} = {fa_salto}$ (definida, pero ≠ límite lateral izquierdo).\n\n"
-                        f"⚠️ Hay un salto finito de magnitud |{lim_der} - {lim_izq}| = {abs(lim_der - lim_izq)} en x = {a_critico}.\n\n"
-                        f"✓ **Clasificación: Discontinuidad de Salto Finito.**"
+                        f"Atención: Límite izquierdo: $\\lim_{{x \\to {a_critico}^-}} (x + {d2}) = {lim_izq}$\n\n"
+                        f"Atención: Límite derecho: $\\lim_{{x \\to {a_critico}^+}} (x + {d4}) = {lim_der}$\n\n"
+                        f"Atención: Como {lim_izq} ≠ {lim_der}, el límite bilateral **no existe**.\n\n"
+                        f"Atención: Valor de la función en el punto: $f({a_critico}) = {a_critico} + {d4} = {fa_salto}$ (definida, pero ≠ límite lateral izquierdo).\n\n"
+                        f"Atención: Hay un salto finito de magnitud |{lim_der} - {lim_izq}| = {abs(lim_der - lim_izq)} en x = {a_critico}.\n\n"
+                        f"OK **Clasificación: Discontinuidad de Salto Finito.**"
                     )
                 else:
                     fa = lim_der
                     st.success(
-                        f"✓ Límite izquierdo: $\\lim_{{x \\to {a_critico}^-}} (x + {d2}) = {lim_izq}$\n\n"
-                        f"✓ Límite derecho: $\\lim_{{x \\to {a_critico}^+}} (x + {d4}) = {lim_der}$\n\n"
-                        f"✓ Como {lim_izq} = {lim_der}, el límite bilateral **existe** y vale {lim_izq}.\n\n"
-                        f"✓ Además, f({a_critico}) = {a_critico} + {d4} = {fa} = límite.\n\n"
-                        f"✓ **La función es continua en x = {a_critico}** (caso especial: d2 = d4)."
+                        f"OK Límite izquierdo: $\\lim_{{x \\to {a_critico}^-}} (x + {d2}) = {lim_izq}$\n\n"
+                        f"OK Límite derecho: $\\lim_{{x \\to {a_critico}^+}} (x + {d4}) = {lim_der}$\n\n"
+                        f"OK Como {lim_izq} = {lim_der}, el límite bilateral **existe** y vale {lim_izq}.\n\n"
+                        f"OK Además, f({a_critico}) = {a_critico} + {d4} = {fa} = límite.\n\n"
+                        f"OK **La función es continua en x = {a_critico}** (caso especial: d2 = d4)."
                     )
             else:
-                st.markdown("**📋 Ecuación asignada (discontinuidad infinita):**")
+                st.markdown("** Ecuación asignada (discontinuidad infinita):**")
                 st.markdown(f"$$ f(x) = \\frac{{{d5} + 1}}{{x - {a_critico}}}, \\quad x \\neq {a_critico} $$")
-                st.markdown("**📌 Análisis Asintótico:**")
+                st.markdown("** Análisis Asintótico:**")
                 st.error(
-                    f"✗ Cuando x→{a_critico}⁻, el denominador (x - {a_critico}) → 0⁻, por lo que f(x) → -∞.\n\n"
-                    f"✗ Cuando x→{a_critico}⁺, el denominador (x - {a_critico}) → 0⁺, por lo que f(x) → +∞.\n\n"
-                    f"✗ Los límites laterales son infinitos y de distinto signo → el límite **no existe**.\n\n"
-                    f"✗ Valor de la función en el punto: $f({a_critico})$ **no está definida** (denominador = 0 cuando x = {a_critico}).\n\n"
-                    f"✗ Existe una **asíntota vertical** en x = {a_critico}. La discontinuidad es **infinita/esencial**."
+                    f"Error Cuando x→{a_critico}⁻, el denominador (x - {a_critico}) → 0⁻, por lo que f(x) → -∞.\n\n"
+                    f"Error Cuando x→{a_critico}⁺, el denominador (x - {a_critico}) → 0⁺, por lo que f(x) → +∞.\n\n"
+                    f"Error Los límites laterales son infinitos y de distinto signo → el límite **no existe**.\n\n"
+                    f"Error Valor de la función en el punto: $f({a_critico})$ **no está definida** (denominador = 0 cuando x = {a_critico}).\n\n"
+                    f"Error Existe una **asíntota vertical** en x = {a_critico}. La discontinuidad es **infinita/esencial**."
                 )
 
         st.markdown("")
@@ -434,7 +434,7 @@ if rut_ingresado.strip() and ejecucion:
         st.markdown("""
         <div style="background:linear-gradient(135deg, #e8f8f0 0%, #f0f8f6 100%);
                     padding:16px 20px; border-radius:12px; margin-bottom:16px;">
-        <h3 style="margin:0; color:#1b5e20;">📊 Fase 2: Evidencia Numérica por Aproximación</h3>
+        <h3 style="margin:0; color:#1b5e20;"> Fase 2: Evidencia Numérica por Aproximación</h3>
         </div>""", unsafe_allow_html=True)
 
         t_izq, t_der = obtener_tabla_aproximacion(caso_label, digitos, a_critico)
@@ -445,10 +445,10 @@ if rut_ingresado.strip() and ejecucion:
             st.markdown("### Tablas de Aproximación Numérica")
             c_t1, c_t2 = st.columns(2, gap="large")
             with c_t1:
-                st.markdown("**🔵 Aproximación Izquierda** ($x \\to a^-$)")
+                st.markdown("** Aproximación Izquierda** ($x \\to a^-$)")
                 st.table(t_izq)
             with c_t2:
-                st.markdown("**🔴 Aproximación Derecha** ($x \\to a^+$)")
+                st.markdown("** Aproximación Derecha** ($x \\to a^+$)")
                 st.table(t_der)
 
         st.markdown("")
@@ -486,7 +486,7 @@ if rut_ingresado.strip() and ejecucion:
                     ]
                 }
                 st.vega_lite_chart(spec, use_container_width=True)
-                st.caption(f"⚪ El círculo vacío rojo en x = {a_critico} representa el punto no definido (agujero). "
+                st.caption(f" El círculo vacío rojo en x = {a_critico} representa el punto no definido (agujero). "
                            f"El límite vale {lim_val} pero f({a_critico}) no existe en la función original.")
             elif residuo_limite == 1:
                 lim_izq_g = float(a_critico + d2)
@@ -531,8 +531,8 @@ if rut_ingresado.strip() and ejecucion:
                     ]
                 }
                 st.vega_lite_chart(spec, use_container_width=True)
-                st.caption(f"⚪ Círculo vacío en ({a_critico}, {lim_izq_g}): límite por izquierda (no alcanzado).  "
-                           f"🔴 Círculo relleno en ({a_critico}, {lim_der_g}): valor real f({a_critico}).")
+                st.caption(f" Círculo vacío en ({a_critico}, {lim_izq_g}): límite por izquierda (no alcanzado).  "
+                           f" Círculo relleno en ({a_critico}, {lim_der_g}): valor real f({a_critico}).")
             else:
                 st.line_chart(puntos_eje_y, x="x", y="y", use_container_width=True)
 
@@ -540,7 +540,7 @@ if rut_ingresado.strip() and ejecucion:
         st.markdown("""
         <div style="background:linear-gradient(135deg, #e8f4f8 0%, #f0f8ee 100%);
                     padding:16px 20px; border-radius:12px; margin-bottom:16px;">
-        <h3 style="margin:0; color:#1e3a5f;">🛡️ Panel de Auditoría para Defensa Oral</h3>
+        <h3 style="margin:0; color:#1e3a5f;"> Panel de Auditoría para Defensa Oral</h3>
         <p style="margin:6px 0 0 0; font-size:0.9rem; opacity:0.85;">Complete los campos durante la defensa oral</p>
         </div>""", unsafe_allow_html=True)
 
@@ -550,7 +550,7 @@ if rut_ingresado.strip() and ejecucion:
         st.markdown("""
         <div style="background:#e8f4f8; border-left:5px solid #2d6a9f;
                     padding:14px 16px; border-radius:6px; margin:16px 0;">
-        <b style="font-size:1.05rem;">📐 SECCIÓN A: Cónica — Coeficientes y Clasificación</b><br>
+        <b style="font-size:1.05rem;"> SECCIÓN A: Cónica — Coeficientes y Clasificación</b><br>
         <small style="opacity:0.85;">El sistema genera los valores. El estudiante justifica matemáticamente la clasificación.</small>
         </div>""", unsafe_allow_html=True)
         
@@ -641,7 +641,7 @@ if rut_ingresado.strip() and ejecucion:
         st.markdown("""
         <div style="background:#f0f8ee; border-left:5px solid #4CAF50;
                     padding:14px 16px; border-radius:6px; margin:16px 0;">
-        <b style="font-size:1.05rem;">📈 SECCIÓN B: Límites y Continuidad Funcional</b><br>
+        <b style="font-size:1.05rem;"> SECCIÓN B: Límites y Continuidad Funcional</b><br>
         <small style="opacity:0.85;">Analice la función por tramos generada desde d8. Complete los valores durante la defensa.</small>
         </div>""", unsafe_allow_html=True)
 
